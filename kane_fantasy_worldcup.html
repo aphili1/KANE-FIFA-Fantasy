@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KANE Fantasy World Cup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --kane-green: #1a6b3a; --kane-gold: #d4a017; --kane-dark: #0d1f14;
+    --kane-light: #f0f7f2; --kane-mid: #2d7a4a; --pitch-green: #1e7d40;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--kane-dark); color: #fff; min-height: 100vh; }
+  h1, h2, h3, .display { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.05em; }
+
+  .header {
+    background: linear-gradient(135deg, #0d1f14 0%, #1a4a28 60%, #0d1f14 100%);
+    border-bottom: 2px solid var(--kane-gold);
+    padding: 1rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-logo { display: flex; align-items: center; gap: 12px; }
+  .logo-badge {
+    width: 48px; height: 48px; border-radius: 50%; background: var(--kane-gold);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--kane-dark); border: 2px solid #fff;
+  }
+  .header-title { font-size: 26px; color: #fff; }
+  .header-sub { font-size: 12px; color: var(--kane-gold); letter-spacing: 0.15em; text-transform: uppercase; margin-top: -4px; }
+  .budget-label { font-size: 11px; color: #8fba9f; text-transform: uppercase; letter-spacing: 0.1em; }
+  .budget-val { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--kane-gold); text-align:right; }
+
+  .tabs { display: flex; background: #0a1a0f; border-bottom: 1px solid #1e4027; }
+  .tab {
+    flex: 1; padding: 0.75rem; text-align: center; font-size: 13px; font-weight: 500;
+    color: #6a9e7a; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s;
+  }
+  .tab:hover { color: #a8d5b5; }
+  .tab.active { color: var(--kane-gold); border-bottom-color: var(--kane-gold); }
+
+  .panel { display: none; padding: 1.25rem; }
+  .panel.active { display: block; }
+
+  .pitch-wrapper {
+    background: var(--pitch-green); border-radius: 12px; padding: 1.5rem 1rem;
+    position: relative; overflow: hidden; margin-bottom: 1rem; min-height: 420px;
+  }
+  .pitch-wrapper::before {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(90deg, rgba(0,0,0,0.03) 0%, rgba(0,0,0,0.03) 50%, transparent 50%, transparent 100%);
+    background-size: 60px 100%;
+  }
+  .pitch-lines { position: absolute; inset: 10px; border: 2px solid rgba(255,255,255,0.25); border-radius: 4px; }
+  .pitch-center {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 60px; height: 60px; border: 2px solid rgba(255,255,255,0.2); border-radius: 50%;
+  }
+  .pitch-midline { position: absolute; top: 50%; left: 10px; right: 10px; height: 2px; background: rgba(255,255,255,0.2); }
+
+  .formation-row { display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; position: relative; z-index: 2; }
+  .player-slot { text-align: center; cursor: pointer; user-select: none; }
+  .player-circle {
+    width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 20px; border: 2px solid rgba(255,255,255,0.4);
+    transition: transform 0.15s; margin: 0 auto 4px; position: relative;
+  }
+  .player-circle:hover { transform: scale(1.1); }
+  .player-circle.empty { background: rgba(0,0,0,0.3); border-style: dashed; font-size: 22px; }
+  .player-circle.filled { border-color: var(--kane-gold); }
+  .player-circle.gk { background: rgba(255,180,0,0.5); }
+  .player-circle.def { background: rgba(30,100,200,0.55); }
+  .player-circle.mid { background: rgba(80,180,60,0.55); }
+  .player-circle.fwd { background: rgba(200,50,50,0.55); }
+  .player-name { font-size: 9px; font-weight: 600; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); max-width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .player-pts { font-size: 9px; color: var(--kane-gold); font-family: 'Bebas Neue', sans-serif; }
+  .cap-badge {
+    position: absolute; top: -2px; right: -2px; width: 16px; height: 16px;
+    background: var(--kane-gold); color: #000; border-radius: 50%;
+    font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+
+  .team-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 1rem; }
+  .stat-card { background: #0f2a19; border: 1px solid #1e4027; border-radius: 8px; padding: 0.6rem; text-align: center; }
+  .stat-label { font-size: 10px; color: #6a9e7a; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px; }
+  .stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: #fff; }
+  .stat-val.gold { color: var(--kane-gold); }
+
+  .market-filters { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; }
+  .filter-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid #2a5035; background: #0f2a19; color: #6a9e7a; font-size: 12px; cursor: pointer; transition: all 0.15s; }
+  .filter-btn:hover, .filter-btn.active { background: var(--kane-green); color: #fff; border-color: var(--kane-mid); }
+
+  .player-list { display: flex; flex-direction: column; gap: 8px; max-height: 420px; overflow-y: auto; }
+  .player-list::-webkit-scrollbar { width: 4px; }
+  .player-list::-webkit-scrollbar-track { background: #0a1a0f; }
+  .player-list::-webkit-scrollbar-thumb { background: var(--kane-mid); border-radius: 2px; }
+
+  .player-card { background: #0f2a19; border: 1px solid #1e4027; border-radius: 10px; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 12px; transition: border-color 0.15s; }
+  .player-card:hover { border-color: var(--kane-mid); }
+  .player-card.selected { border-color: var(--kane-gold); background: #142a1a; }
+  .player-card.injured { opacity: 0.55; }
+  .player-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .player-info { flex: 1; }
+  .player-card-name { font-weight: 600; font-size: 14px; }
+  .player-card-meta { font-size: 11px; color: #6a9e7a; margin-top: 2px; }
+  .player-stats-mini { display: flex; gap: 10px; margin-top: 4px; }
+  .mini-stat { font-size: 10px; color: #a0c8ab; }
+  .mini-stat span { color: #fff; font-weight: 600; }
+  .player-price { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--kane-gold); text-align: right; }
+  .price-sub { font-size: 10px; color: #6a9e7a; text-align: right; }
+  .add-btn { background: var(--kane-green); border: none; color: #fff; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 18px; transition: background 0.15s; flex-shrink: 0; }
+  .add-btn:hover { background: var(--kane-mid); }
+  .add-btn.remove { background: #5a1515; }
+  .add-btn.remove:hover { background: #7a1f1f; }
+  .position-pill { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; letter-spacing: 0.05em; }
+  .pill-gk { background: rgba(255,180,0,0.25); color: #f5c842; }
+  .pill-def { background: rgba(30,100,200,0.25); color: #6ab0f5; }
+  .pill-mid { background: rgba(80,180,60,0.25); color: #7ed87e; }
+  .pill-fwd { background: rgba(200,50,50,0.25); color: #f07070; }
+
+  .leaderboard { display: flex; flex-direction: column; gap: 8px; }
+  .lb-entry { background: #0f2a19; border: 1px solid #1e4027; border-radius: 10px; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 12px; }
+  .lb-rank { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: #3a6a4a; width: 32px; text-align: center; }
+  .lb-rank.top { color: var(--kane-gold); }
+  .lb-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--kane-green); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; }
+  .lb-name { flex: 1; font-weight: 500; }
+  .lb-team { font-size: 11px; color: #6a9e7a; }
+  .lb-pts { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: #fff; text-align: right; }
+  .lb-trend { font-size: 11px; text-align: right; }
+  .trend-up { color: #4ecb71; } .trend-dn { color: #e05050; }
+
+  .fixtures-list { display: flex; flex-direction: column; gap: 10px; }
+  .fixture-card { background: #0f2a19; border: 1px solid #1e4027; border-radius: 10px; padding: 0.9rem 1rem; }
+  .fixture-meta { font-size: 10px; color: #6a9e7a; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+  .fixture-teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
+  .fixture-team { font-weight: 600; font-size: 14px; }
+  .fixture-team.right { text-align: right; }
+  .fixture-score { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--kane-gold); text-align: center; }
+  .fixture-live { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-align: center; }
+
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); align-items: center; justify-content: center; z-index: 100; }
+  .modal-bg.open { display: flex; }
+  .modal { background: #122018; border: 1px solid #2a5035; border-radius: 14px; padding: 1.5rem; max-width: 340px; width: 90%; }
+  .modal-title { font-size: 20px; margin-bottom: 0.75rem; color: var(--kane-gold); font-family: 'Bebas Neue', sans-serif; }
+  .modal-body { font-size: 14px; color: #a8d5b5; margin-bottom: 1rem; line-height: 1.6; }
+  .modal-btns { display: flex; gap: 8px; }
+  .btn-confirm { flex: 1; background: var(--kane-green); border: none; color: #fff; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; }
+  .btn-cancel { flex: 1; background: #1e3525; border: 1px solid #2a5035; color: #a0c8ab; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--kane-green); border: 1px solid var(--kane-gold); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; transition: transform 0.3s ease; z-index: 200; white-space: nowrap; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.error { background: #5a1515; border-color: #c0392b; }
+
+  .section-title { font-size: 18px; color: var(--kane-gold); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px; font-family: 'Bebas Neue', sans-serif; }
+  .chip { background: #1a3d25; border-radius: 20px; padding: 2px 8px; font-size: 11px; color: #7ed87e; font-family: 'DM Sans', sans-serif; font-weight: 500; }
+  .formation-selector { display: flex; gap: 6px; }
+  .form-opt { padding: 5px 12px; border-radius: 20px; border: 1px solid #2a5035; background: #0f2a19; color: #6a9e7a; font-size: 12px; cursor: pointer; transition: all 0.15s; }
+  .form-opt.active { background: var(--kane-green); color: #fff; border-color: var(--kane-mid); }
+  input[type="text"] { background: #0f2a19; border: 1px solid #2a5035; color: #fff; border-radius: 8px; padding: 8px 12px; font-size: 13px; width: 100%; margin-bottom: 0.75rem; font-family: 'DM Sans', sans-serif; }
+  input[type="text"]::placeholder { color: #3a6a4a; }
+  input[type="text"]:focus { outline: none; border-color: var(--kane-mid); }
+  .kane-logo-bar { background: #0a1a0f; border-top: 1px solid #1e4027; padding: 0.6rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+  .kane-org { font-size: 11px; color: #3a6a4a; letter-spacing: 0.1em; text-transform: uppercase; }
+  .gw-badge { background: var(--kane-gold); color: var(--kane-dark); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; }
+  .empty-slot-msg { text-align: center; padding: 2rem; color: #3a6a4a; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">
+    <div class="logo-badge">K</div>
+    <div>
+      <div class="header-title">KANE Fantasy</div>
+      <div class="header-sub">World Cup Edition</div>
+    </div>
+  </div>
+  <div>
+    <div class="budget-label">Budget remaining</div>
+    <div class="budget-val" id="budget-display">$100M</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('squad')">⚽ My Squad</div>
+  <div class="tab" onclick="switchTab('market')">🛒 Market</div>
+  <div class="tab" onclick="switchTab('leagues')">🏆 Leagues</div>
+  <div class="tab" onclick="switchTab('fixtures')">📅 Fixtures</div>
+</div>
+
+<div id="tab-squad" class="panel active">
+  <div class="section-title">
+    Formation
+    <div class="formation-selector">
+      <div class="form-opt active" onclick="setFormation('442',this)">4-4-2</div>
+      <div class="form-opt" onclick="setFormation('433',this)">4-3-3</div>
+      <div class="form-opt" onclick="setFormation('352',this)">3-5-2</div>
+    </div>
+  </div>
+  <div class="pitch-wrapper">
+    <div class="pitch-lines"></div>
+    <div class="pitch-midline"></div>
+    <div class="pitch-center"></div>
+    <div class="formation-row" id="row-fwd"></div>
+    <div class="formation-row" id="row-mid"></div>
+    <div class="formation-row" id="row-def"></div>
+    <div class="formation-row" id="row-gk"></div>
+  </div>
+  <div class="team-stats">
+    <div class="stat-card"><div class="stat-label">GW Points</div><div class="stat-val gold" id="stat-gw">0</div></div>
+    <div class="stat-card"><div class="stat-label">Total Pts</div><div class="stat-val" id="stat-total">0</div></div>
+    <div class="stat-card"><div class="stat-label">Players</div><div class="stat-val" id="stat-players">0/11</div></div>
+    <div class="stat-card"><div class="stat-label">Avg Rating</div><div class="stat-val" id="stat-rating">—</div></div>
+  </div>
+  <button class="btn-confirm" style="width:100%;" onclick="simulateGameweek()">▶ Simulate Gameweek</button>
+</div>
+
+<div id="tab-market" class="panel">
+  <input type="text" id="search-box" placeholder="Search player name or country..." oninput="renderMarket()">
+  <div class="market-filters">
+    <div class="filter-btn active" onclick="setFilter('all',this)">All</div>
+    <div class="filter-btn" onclick="setFilter('GK',this)">GK</div>
+    <div class="filter-btn" onclick="setFilter('DEF',this)">DEF</div>
+    <div class="filter-btn" onclick="setFilter('MID',this)">MID</div>
+    <div class="filter-btn" onclick="setFilter('FWD',this)">FWD</div>
+    <div class="filter-btn" onclick="setFilter('available',this)">Available</div>
+  </div>
+  <div class="player-list" id="player-list"></div>
+</div>
+
+<div id="tab-leagues" class="panel">
+  <div class="section-title">KANE Private League <div class="chip">12 Managers</div></div>
+  <div class="leaderboard" id="leaderboard"></div>
+</div>
+
+<div id="tab-fixtures" class="panel">
+  <div class="section-title">Gameweek 3 — Group Stage</div>
+  <div class="fixtures-list" id="fixtures-list"></div>
+</div>
+
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Add Player?</div>
+    <div class="modal-body" id="modal-body">Are you sure?</div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" id="modal-confirm">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="kane-logo-bar">
+  <div class="kane-org">KANE Association · Fantasy World Cup</div>
+  <div class="gw-badge">GW 3 LIVE</div>
+</div>
+
+<script>
+const BUDGET_MAX = 100;
+let budget = 100, posFilter = 'all', pendingAction = null, formation = '442', gwSimulated = false, captainId = null;
+let mySquad = [];
+const FORMATIONS = { '442':{fwd:2,mid:4,def:4}, '433':{fwd:3,mid:3,def:4}, '352':{fwd:2,mid:5,def:3} };
+const PLAYERS = [
+  {id:1,name:'M. Alisson',country:'Brazil',flag:'🇧🇷',pos:'GK',price:9,rating:88,pts:6,emoji:'🧤',injured:false},
+  {id:2,name:'Y. Sommer',country:'Switzerland',flag:'🇨🇭',pos:'GK',price:7,rating:83,pts:4,emoji:'🧤',injured:false},
+  {id:3,name:'D. Livakovic',country:'Croatia',flag:'🇭🇷',pos:'GK',price:7.5,rating:84,pts:5,emoji:'🧤',injured:false},
+  {id:4,name:'A. Hakimi',country:'Morocco',flag:'🇲🇦',pos:'DEF',price:10,rating:86,pts:8,emoji:'🛡️',injured:false},
+  {id:5,name:'K. Walker',country:'England',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',pos:'DEF',price:9,rating:84,pts:5,emoji:'🛡️',injured:false},
+  {id:6,name:'V. van Dijk',country:'Netherlands',flag:'🇳🇱',pos:'DEF',price:11,rating:89,pts:7,emoji:'🛡️',injured:false},
+  {id:7,name:'R. Guerreiro',country:'Portugal',flag:'🇵🇹',pos:'DEF',price:8.5,rating:83,pts:6,emoji:'🛡️',injured:false},
+  {id:8,name:'E. Dias',country:'Portugal',flag:'🇵🇹',pos:'DEF',price:9,rating:85,pts:4,emoji:'🛡️',injured:false},
+  {id:9,name:'J. Koundé',country:'France',flag:'🇫🇷',pos:'DEF',price:10,rating:87,pts:6,emoji:'🛡️',injured:false},
+  {id:10,name:'M. Acuña',country:'Argentina',flag:'🇦🇷',pos:'DEF',price:8,rating:82,pts:5,emoji:'🛡️',injured:true},
+  {id:11,name:'K. De Bruyne',country:'Belgium',flag:'🇧🇪',pos:'MID',price:13,rating:91,pts:10,emoji:'🎯',injured:false},
+  {id:12,name:'L. Modric',country:'Croatia',flag:'🇭🇷',pos:'MID',price:10,rating:87,pts:8,emoji:'🎯',injured:false},
+  {id:13,name:'J. Bellingham',country:'England',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',pos:'MID',price:14,rating:90,pts:12,emoji:'🎯',injured:false},
+  {id:14,name:'B. Fernandes',country:'Portugal',flag:'🇵🇹',pos:'MID',price:11,rating:88,pts:9,emoji:'🎯',injured:false},
+  {id:15,name:'E. Camavinga',country:'France',flag:'🇫🇷',pos:'MID',price:9,rating:84,pts:6,emoji:'🎯',injured:false},
+  {id:16,name:'F. Valverde',country:'Uruguay',flag:'🇺🇾',pos:'MID',price:10,rating:87,pts:8,emoji:'🎯',injured:false},
+  {id:17,name:'M. Zielinski',country:'Poland',flag:'🇵🇱',pos:'MID',price:8,rating:82,pts:5,emoji:'🎯',injured:true},
+  {id:18,name:'K. Mbappé',country:'France',flag:'🇫🇷',pos:'FWD',price:16,rating:95,pts:15,emoji:'⚡',injured:false},
+  {id:19,name:'E. Haaland',country:'Norway',flag:'🇳🇴',pos:'FWD',price:15,rating:94,pts:14,emoji:'⚡',injured:false},
+  {id:20,name:'L. Messi',country:'Argentina',flag:'🇦🇷',pos:'FWD',price:15,rating:93,pts:13,emoji:'⚡',injured:false},
+  {id:21,name:'V. Osimhen',country:'Nigeria',flag:'🇳🇬',pos:'FWD',price:12,rating:88,pts:9,emoji:'⚡',injured:false},
+  {id:22,name:'R. Lewandowski',country:'Poland',flag:'🇵🇱',pos:'FWD',price:12,rating:88,pts:8,emoji:'⚡',injured:false},
+  {id:23,name:'A. Saka',country:'England',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',pos:'FWD',price:11,rating:86,pts:9,emoji:'⚡',injured:false},
+];
+const LEADERBOARD_DATA = [
+  {name:'Alex Okonkwo',team:'Golden Eagles FC',pts:487,trend:'+12',up:true},
+  {name:'Priya Menon',team:'Blazing Stars XI',pts:471,trend:'+8',up:true},
+  {name:'James Whitfield',team:'KANE Legends',pts:459,trend:'-3',up:false},
+  {name:'Sofia Carvalho',team:'Cannonball United',pts:443,trend:'+15',up:true},
+  {name:'David Osei',team:'Red Thunder FC',pts:428,trend:'+2',up:true},
+  {name:'Amara Diallo',team:'Silent Snakes XI',pts:410,trend:'-5',up:false},
+  {name:'Tom Bergmann',team:'KANE Warriors',pts:395,trend:'+7',up:true},
+  {name:'You',team:'My Dream Team',pts:342,trend:'+0',up:false},
+];
+const FIXTURES = [
+  {home:'🇫🇷 France',away:'🇩🇪 Germany',score:'2 - 1',status:'FT',date:'GW3 · Group D'},
+  {home:'🇧🇷 Brazil',away:'🇲🇽 Mexico',score:'3 - 0',status:'FT',date:'GW3 · Group G'},
+  {home:'🇦🇷 Argentina',away:'🇵🇱 Poland',score:'2 - 0',status:'FT',date:'GW3 · Group C'},
+  {home:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 England',away:'🇺🇸 USA',score:"67'",status:'LIVE',date:'GW3 · Group B'},
+  {home:'🇵🇹 Portugal',away:'🇭🇷 Croatia',score:'1 - 1',status:'LIVE',date:'GW3 · Group F'},
+  {home:'🇳🇱 Netherlands',away:'🇸🇳 Senegal',score:'vs',status:'19:00',date:'GW3 · Group A'},
+  {home:'🇧🇪 Belgium',away:'🇲🇦 Morocco',score:'vs',status:'21:00',date:'GW3 · Group E'},
+];
+
+function getPlayer(id){return PLAYERS.find(p=>p.id===id);}
+function isInSquad(id){return mySquad.includes(id);}
+function calcBudget(){return Math.round((BUDGET_MAX-mySquad.reduce((s,id)=>s+getPlayer(id).price,0))*10)/10;}
+function updateBudget(){budget=calcBudget();document.getElementById('budget-display').textContent=`$${budget}M`;}
+
+function renderSquad(){
+  const f=FORMATIONS[formation];
+  const fwds=mySquad.filter(id=>getPlayer(id).pos==='FWD');
+  const mids=mySquad.filter(id=>getPlayer(id).pos==='MID');
+  const defs=mySquad.filter(id=>getPlayer(id).pos==='DEF');
+  const gks=mySquad.filter(id=>getPlayer(id).pos==='GK');
+  renderRow('row-fwd',fwds,f.fwd,'FWD','fwd');
+  renderRow('row-mid',mids,f.mid,'MID','mid');
+  renderRow('row-def',defs,f.def,'DEF','def');
+  renderRow('row-gk',gks,1,'GK','gk');
+  const total=mySquad.length;
+  document.getElementById('stat-players').textContent=`${total}/11`;
+  const gw=mySquad.reduce((s,id)=>{const p=getPlayer(id);return s+p.pts*(id===captainId?2:1);},0);
+  document.getElementById('stat-gw').textContent=gw;
+  document.getElementById('stat-total').textContent=gw+342;
+  const avgRating=total>0?Math.round(mySquad.reduce((s,id)=>s+getPlayer(id).rating,0)/total):0;
+  document.getElementById('stat-rating').textContent=total>0?avgRating:'—';
+}
+
+function renderRow(rowId,playerIds,slots,pos,cls){
+  const row=document.getElementById(rowId);row.innerHTML='';
+  for(let i=0;i<slots;i++){
+    const div=document.createElement('div');div.className='player-slot';
+    if(playerIds[i]){
+      const p=getPlayer(playerIds[i]);const isCap=p.id===captainId;
+      div.innerHTML=`<div style="position:relative;display:inline-block;"><div class="player-circle filled ${cls}" onclick="handleSlotClick(${p.id})">${p.emoji}${isCap?'<div class="cap-badge">C</div>':''}</div></div><div class="player-name">${p.name.split('.')[1]?.trim()||p.name}</div><div class="player-pts">${p.pts*(isCap?2:1)}pts</div>`;
+    } else {
+      div.innerHTML=`<div class="player-circle empty ${cls}" onclick="switchTab('market')">+</div><div class="player-name" style="color:#3a6a4a">${pos}</div><div class="player-pts" style="color:#3a6a4a">—</div>`;
+    }
+    row.appendChild(div);
+  }
+}
+
+function handleSlotClick(id){
+  const p=getPlayer(id);
+  pendingAction=()=>{if(captainId===id)captainId=null;mySquad=mySquad.filter(x=>x!==id);if(!captainId&&mySquad.length>0)captainId=mySquad[0];updateBudget();renderSquad();renderMarket();showToast(`${p.name} removed`);};
+  document.getElementById('modal-title').textContent=p.name;
+  document.getElementById('modal-body').innerHTML=`<button class="btn-confirm" style="width:100%;margin-bottom:6px;" onclick="makeCaptain(${id})">⭐ Make Captain (×2 pts)</button><button class="add-btn remove" style="width:100%;border-radius:8px;padding:10px;" onclick="confirmAction()">❌ Remove from Squad</button>`;
+  document.getElementById('modal-confirm').style.display='none';
+  document.getElementById('modal-bg').classList.add('open');
+}
+
+function makeCaptain(id){captainId=id;closeModal();renderSquad();showToast('New captain set! ×2 points');}
+function setFormation(f,el){formation=f;document.querySelectorAll('.form-opt').forEach(e=>e.classList.remove('active'));el.classList.add('active');renderSquad();}
+
+function renderMarket(){
+  const q=document.getElementById('search-box').value.toLowerCase();
+  const list=document.getElementById('player-list');
+  const filtered=PLAYERS.filter(p=>{
+    const matchPos=posFilter==='all'?true:posFilter==='available'?!isInSquad(p.id):p.pos===posFilter;
+    const matchQ=!q||p.name.toLowerCase().includes(q)||p.country.toLowerCase().includes(q);
+    return matchPos&&matchQ;
+  });
+  list.innerHTML=filtered.map(p=>{
+    const inSquad=isInSquad(p.id);
+    const pillCls='pill-'+p.pos.toLowerCase();
+    const btnIcon=inSquad?'✓':(p.injured?'🚑':'+');
+    const btnCls=inSquad?'add-btn remove':'add-btn';
+    const canAfford=budget>=p.price||inSquad;
+    return `<div class="player-card ${inSquad?'selected':''} ${p.injured?'injured':''}">
+      <div class="player-avatar" style="background:${p.pos==='GK'?'rgba(255,180,0,0.3)':p.pos==='DEF'?'rgba(30,100,200,0.3)':p.pos==='MID'?'rgba(80,180,60,0.3)':'rgba(200,50,50,0.3)'};">${p.emoji}</div>
+      <div class="player-info">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="player-card-name">${p.flag} ${p.name}</div>
+          <span class="position-pill ${pillCls}">${p.pos}</span>
+          ${p.injured?'<span style="font-size:10px;color:#e05050;">INSTR</span>':''}
+        </div>
+        <div class="player-card-meta">${p.country} · Rat. ${p.rating}</div>
+        <div class="player-stats-mini">
+          <div class="mini-stat">GW Pts <span>${p.pts}</span></div>
+          <div class="mini-stat">Season <span>${p.pts*3}</span></div>
+          ${captainId===p.id?'<div class="mini-stat" style="color:var(--kane-gold)">⭐ Captain</div>':''}
+        </div>
+      </div>
+      <div><div class="player-price">$${p.price}M</div><div class="price-sub">per season</div></div>
+      <button class="${btnCls}" onclick="handlePlayerAction(${p.id})" ${!canAfford&&!inSquad?'disabled style="opacity:0.4"':''}>
+        ${btnIcon}
+      </button>
+    </div>`;
+  }).join('')||'<div class="empty-slot-msg">No players match your search.</div>';
+}
+
+function handlePlayerAction(id){
+  const p=getPlayer(id);
+  if(isInSquad(id)){
+    pendingAction=()=>{if(captainId===id)captainId=null;mySquad=mySquad.filter(x=>x!==id);if(!captainId&&mySquad.length>0)captainId=mySquad[0];updateBudget();renderSquad();renderMarket();showToast(`${p.name} sold`);};
+    openModal(`Sell ${p.name}?`,`Remove ${p.name} ($${p.price}M) from your squad and recover the budget?`);
+  } else {
+    if(mySquad.length>=11){showToast('Squad full! Remove a player first.',true);return;}
+    if(budget<p.price){showToast('Not enough budget!',true);return;}
+    if(p.injured){showToast(`${p.name} is injured!`,true);return;}
+    const posCount=mySquad.filter(id2=>getPlayer(id2).pos===p.pos).length;
+    const limits={GK:1,DEF:5,MID:5,FWD:3};
+    if(posCount>=limits[p.pos]){showToast(`Max ${limits[p.pos]} ${p.pos}s allowed!`,true);return;}
+    pendingAction=()=>{mySquad.push(id);if(!captainId)captainId=id;updateBudget();renderSquad();renderMarket();showToast(`${p.name} added!`);};
+    openModal(`Sign ${p.name}?`,`Add ${p.flag} ${p.name} (${p.pos} · $${p.price}M · Rat.${p.rating}) to your squad?`);
+  }
+}
+
+function openModal(title,body){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').textContent=body;
+  document.getElementById('modal-confirm').style.display='';
+  document.getElementById('modal-confirm').onclick=confirmAction;
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeModal(){document.getElementById('modal-bg').classList.remove('open');}
+function confirmAction(){if(pendingAction){pendingAction();pendingAction=null;}closeModal();}
+
+function renderLeaderboard(){
+  document.getElementById('leaderboard').innerHTML=LEADERBOARD_DATA.map((e,i)=>`
+    <div class="lb-entry">
+      <div class="lb-rank ${i<3?'top':''}">${i+1}</div>
+      <div class="lb-avatar">${e.name.split(' ').map(w=>w[0]).join('')}</div>
+      <div style="flex:1;"><div class="lb-name">${e.name}</div><div class="lb-team">${e.team}</div></div>
+      <div><div class="lb-pts">${e.pts}</div><div class="lb-trend ${e.up?'trend-up':'trend-dn'}">${e.up?'▲':'▼'} ${e.trend}</div></div>
+    </div>`).join('');
+}
+
+function renderFixtures(){
+  document.getElementById('fixtures-list').innerHTML=FIXTURES.map(f=>`
+    <div class="fixture-card">
+      <div class="fixture-meta">${f.date}</div>
+      <div class="fixture-teams">
+        <div class="fixture-team">${f.home}</div>
+        <div>
+          <div class="fixture-score">${f.score}</div>
+          <div class="fixture-live" style="color:${f.status==='LIVE'?'#4ecb71':f.status==='FT'?'#888':'#6a9e7a'}">${f.status}</div>
+        </div>
+        <div class="fixture-team right">${f.away}</div>
+      </div>
+    </div>`).join('');
+}
+
+function setFilter(f,el){posFilter=f;document.querySelectorAll('.filter-btn').forEach(e=>e.classList.remove('active'));el.classList.add('active');renderMarket();}
+function switchTab(tab){document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['squad','market','leagues','fixtures'][i]===tab));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById('tab-'+tab).classList.add('active');}
+
+function simulateGameweek(){
+  if(mySquad.length<11){showToast('Add 11 players first!',true);return;}
+  if(gwSimulated){showToast('GW already simulated!',true);return;}
+  gwSimulated=true;
+  const bonus=Math.floor(Math.random()*20)+5;
+  const gwPts=parseInt(document.getElementById('stat-gw').textContent)+bonus;
+  document.getElementById('stat-gw').textContent=gwPts;
+  document.getElementById('stat-total').textContent=gwPts+342;
+  showToast(`GW simulated! +${bonus} bonus points 🎉`);
+}
+
+function showToast(msg,error=false){
+  const t=document.getElementById('toast');t.textContent=msg;
+  t.className='toast'+(error?' error':'');t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+renderSquad();renderMarket();renderLeaderboard();renderFixtures();
+</script>
+</body>
+</html>
