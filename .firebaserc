@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "kane-fantasy-world-cup-2026"
-  }
+  },
+  "targets": {
+    "kane-fantasy-world-cup-2026": {
+      "hosting": {
+        "game-link": [
+          "kane-community-fantasy-football"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
