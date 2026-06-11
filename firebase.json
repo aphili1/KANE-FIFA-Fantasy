@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "target": "game-link",
     "public": "public",
     "ignore": [
       "firebase.json",
