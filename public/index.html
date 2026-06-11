@@ -25,6 +25,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .nt{flex:0 0 auto;padding:.55rem .75rem;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.05em;color:var(--muted);cursor:pointer;border-bottom:2.5px solid transparent;text-transform:uppercase;transition:all .18s}
 .nt:hover{color:var(--text)}.nt.active{color:var(--gold);border-bottom-color:var(--gold)}
 .panel{display:none;padding:.85rem;position:relative;z-index:1}.panel.active{display:block}
+.rsec{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.8rem;margin-bottom:.7rem}
+.rsh{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--gold);margin-bottom:6px}
+.rsb{font-size:12px;color:var(--text);line-height:1.6}
+.rrow{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid var(--border);font-size:12px}
+.rrow:last-child{border-bottom:none}.rrow b{color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:14px}
 /* REGISTER */
 #reg{min-height:calc(100vh - 60px);display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:1.5rem;position:relative;z-index:10}
 .reg-hero{font-family:'Barlow Condensed',sans-serif;font-size:clamp(30px,8vw,58px);font-weight:900;color:#fff;text-transform:uppercase;line-height:.92;margin-bottom:.65rem}
@@ -294,6 +299,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <div class="nt" onclick="switchTab('fixtures')">📅 Fixtures</div>
     <div class="nt" onclick="switchTab('points')">📊 Points</div>
     <div class="nt" onclick="switchTab('account')">👤 Account</div>
+    <div class="nt" onclick="switchTab('rules')">📖 Rules</div>
     <div class="nt" id="nt-admin" onclick="switchTab('admin')" style="display:none">🔑 Admin</div>
   </div>
 
@@ -448,6 +454,61 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <button class="btn-s" style="margin-top:6px" onclick="signOutAcct()">🚪 Sign Out</button>
     <div style="font-size:9px;color:var(--muted);text-align:center;margin-top:.5rem">Data stored locally in your browser</div>
     <button class="btn-s" style="margin-top:14px;border-color:var(--gold2);color:var(--gold)" onclick="unlockAdmin()">🔑 Admin Access</button>
+  </div>
+
+  <!-- RULES -->
+  <div id="tab-rules" class="panel">
+    <div style="background:linear-gradient(135deg,rgba(232,184,75,.12),rgba(20,40,28,.5));border:1px solid var(--gold);border-radius:12px;padding:.9rem;margin-bottom:1rem">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--gold)">📖 How to Play</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px">KANE Fantasy World Cup 2026 — quick rules</div>
+    </div>
+
+    <div class="rsec">
+      <div class="rsh">⚽ Build Your Squad</div>
+      <div class="rsb">Pick <b>15 players</b>: 2 Goalkeepers, 5 Defenders, 5 Midfielders, 3 Forwards. Stay within your budget (<b>$100M</b> group stage, <b>$105M</b> knockouts). Maximum <b>4 players from any one nation</b>. Choose your starting 11 in any formation, and pick a <b>Captain</b> who scores double points.</div>
+    </div>
+
+    <div class="rsec">
+      <div class="rsh">📅 Daily Selection &amp; Deadlines</div>
+      <div class="rsb">This is a per-day game. You can change your team any day before that day's <b>first kickoff</b>. Your squad locks 1 second before kickoff and reopens the next day. If you don't make changes, your team stays exactly as it was — you never lose your squad. You can set teams days ahead; they just lock at each day's deadline.</div>
+    </div>
+
+    <div class="rsec">
+      <div class="rsh">🏆 Scoring (Official FIFA Fantasy)</div>
+      <div class="rsb">
+        <div class="rrow"><span>Goal — Forward</span><b>+4</b></div>
+        <div class="rrow"><span>Goal — Midfielder</span><b>+5</b></div>
+        <div class="rrow"><span>Goal — Defender / GK</span><b>+6</b></div>
+        <div class="rrow"><span>Assist</span><b>+3</b></div>
+        <div class="rrow"><span>Played up to 60 min</span><b>+1</b></div>
+        <div class="rrow"><span>Played 60+ min</span><b>+2</b></div>
+        <div class="rrow"><span>Clean sheet — GK / DEF</span><b>+4</b></div>
+        <div class="rrow"><span>Clean sheet — MID</span><b>+1</b></div>
+        <div class="rrow"><span>GK saves (per 3)</span><b>+1</b></div>
+        <div class="rrow"><span>Player of the Match</span><b>+3</b></div>
+        <div class="rrow"><span>Yellow card</span><b>-1</b></div>
+        <div class="rrow"><span>Red card</span><b>-3</b></div>
+        <div class="rrow"><span>Own goal</span><b>-2</b></div>
+        <div class="rrow"><span>Penalty miss</span><b>-2</b></div>
+        <div class="rrow"><span>Captain</span><b>×2</b></div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px">Bench players don't score unless moved into your XI before the deadline.</div>
+    </div>
+
+    <div class="rsec">
+      <div class="rsh">🥇 Winning</div>
+      <div class="rsb">The <b>Standings</b> tab shows the live KANE leaderboard. <b>This Week</b> crowns the weekly leader; <b>Overall</b> tracks the tournament champion across the whole World Cup. Only registered members appear.</div>
+    </div>
+
+    <div style="background:var(--card2);border:1px solid var(--gold2);border-radius:10px;padding:.85rem;margin-top:1rem">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">⚠️ Disclaimer</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6">This game is for <b style="color:var(--text)">fun and entertainment purposes only</b>. It is a friendly community game run by KANE (Kerala Association of New England). There are no real-money stakes, betting, or gambling involved. Player data and scoring are unofficial and may not perfectly match official sources. This app is not affiliated with, endorsed by, or connected to FIFA. Enjoy the game in good spirit! 🎉</div>
+    </div>
+
+    <div style="font-size:9px;color:var(--muted);line-height:1.55;margin-top:.9rem;padding-top:.7rem;border-top:1px solid var(--border)">
+      <b style="color:var(--muted)">Privacy:</b> We collect your name and email only to run the game and identify you on the leaderboard. We don't sell or share your information. Data is stored via Firebase.<br>
+      <b style="color:var(--muted)">Results:</b> Points and standings are unofficial and may contain errors or delays. The admin's recorded results are final for this game.
+    </div>
   </div>
 
   <!-- ADMIN -->
@@ -925,7 +986,7 @@ function renderAccount(){
 // ============================================================
 // NAV
 // ============================================================
-function switchTab(t){['squad','market','standings','fixtures','points','account','admin'].forEach((n,i)=>{const nt=document.querySelectorAll('.nt')[i];if(nt)nt.classList.toggle('active',n===t);const tab=document.getElementById('tab-'+n);if(tab)tab.classList.toggle('active',n===t);});if(t==='account')renderAccount();if(t==='standings')syncSharedBoard();if(t==='fixtures')renderFixtures();}
+function switchTab(t){['squad','market','standings','fixtures','points','account','rules','admin'].forEach((n,i)=>{const nt=document.querySelectorAll('.nt')[i];if(nt)nt.classList.toggle('active',n===t);const tab=document.getElementById('tab-'+n);if(tab)tab.classList.toggle('active',n===t);});if(t==='account')renderAccount();if(t==='standings')syncSharedBoard();if(t==='fixtures')renderFixtures();}
 
 // ============================================================
 // SQUAD RENDER
