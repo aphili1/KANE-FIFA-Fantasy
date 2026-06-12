@@ -390,10 +390,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <!-- FIXTURES -->
   <div id="tab-fixtures" class="panel">
     <div class="itabs">
-      <div class="itab active" onclick="switchFix('group',this)">Group Stage</div>
+      <div class="itab active" onclick="switchFix('date',this)">📅 By Date</div>
+      <div class="itab" onclick="switchFix('group',this)">Groups</div>
       <div class="itab" onclick="switchFix('ko',this)">Knockouts</div>
     </div>
-    <div id="fix-group"></div>
+    <div id="fix-date"></div>
+    <div id="fix-group" style="display:none"></div>
     <div id="fix-ko" style="display:none"></div>
   </div>
 
@@ -408,7 +410,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
     <div class="alst" id="api-upd"></div>
     <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:.6rem .75rem;margin-bottom:.6rem;font-size:10px;color:var(--muted);line-height:1.55">
-      ℹ️ <b style="color:var(--text)">About results:</b> scores load from a free public football data feed that updates periodically, so they may lag the live match by a while. Always confirm official results &amp; standings at <a href="https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/standings" target="_blank" style="color:var(--gold)">FIFA.com</a>. An admin can also enter final scores manually if the feed is behind.
+      ℹ️ <b style="color:var(--text)">About results:</b> scores load from a free public football data feed that updates periodically, so they may lag the live match by a while. Always confirm official results &amp; standings at a trusted source like <a href="https://www.espn.com/soccer/" target="_blank" style="color:var(--gold)">ESPN</a>. An admin can also enter final scores manually if the feed is behind.
     </div>
     <div class="sr">
       <div class="srtitle">🏆 Scoring System</div>
@@ -417,11 +419,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div class="srrow"><span>⚽ Goal — Midfielder</span><span class="srp">+5</span></div>
         <div class="srrow"><span>⚽ Goal — Defender / GK</span><span class="srp">+6</span></div>
         <div class="srrow"><span>🎯 Assist</span><span class="srp">+3</span></div>
-        <div class="srrow"><span>▶ Played up to 60 min</span><span class="srp">+1</span></div>
-        <div class="srrow"><span>▶ Played 60+ min</span><span class="srp">+2</span></div>
-        <div class="srrow"><span>🛡️ Clean Sheet — GK / DEF</span><span class="srp">+4</span></div>
-        <div class="srrow"><span>🛡️ Clean Sheet — MID</span><span class="srp">+1</span></div>
-        <div class="srrow"><span>🧤 GK Saves (per 3)</span><span class="srp">+1</span></div>
+        <div class="srrow"><span>🏆 On the winning team</span><span class="srp">+1</span></div>
         <div class="srrow"><span>🏅 Player of the Match</span><span class="srp">+3</span></div>
         <div class="srrow"><span>🟨 Yellow Card</span><span class="srp">-1</span></div>
         <div class="srrow"><span>🟥 Red Card</span><span class="srp">-3</span></div>
@@ -433,7 +431,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
     <div id="pts-bd"></div>
     <button class="sbtn" style="width:100%;margin-top:.75rem" onclick="fetchLive()">🌐 Fetch Live Scores &amp; Calculate</button>
-    <div style="font-size:8px;color:#1e3a22;text-align:center;margin-top:.35rem">Results auto-load once matches are played · Cross-check official scores at fifa.com</div>
+    <div style="font-size:8px;color:#1e3a22;text-align:center;margin-top:.35rem">Results auto-load once matches are played · Cross-check official scores at espn.com</div>
   </div>
 
   <!-- ACCOUNT -->
@@ -477,7 +475,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
     <div class="rsec">
       <div class="rsh">📅 Daily Selection &amp; Deadlines</div>
-      <div class="rsb">This is a per-day game. You can change your team any day before that day's <b>first kickoff</b>. Your squad locks 1 second before kickoff and reopens the next day. If you don't make changes, your team stays exactly as it was — you never lose your squad. You can set teams days ahead; they just lock at each day's deadline.</div>
+      <div class="rsb">This is a per-day game. You can change your team any day before that day's <b>first kickoff</b>. Once the first match of the day kicks off, your squad <b>locks</b> and stays locked until the <b>final whistle of the last game that day</b> (which may run late into the night). It then reopens for the next day. If you don't make changes, your team stays exactly as it was — you never lose your squad. You can set teams days ahead; they just lock at each day's first kickoff.</div>
     </div>
 
     <div class="rsec">
@@ -487,11 +485,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div class="rrow"><span>Goal — Midfielder</span><b>+5</b></div>
         <div class="rrow"><span>Goal — Defender / GK</span><b>+6</b></div>
         <div class="rrow"><span>Assist</span><b>+3</b></div>
-        <div class="rrow"><span>Played up to 60 min</span><b>+1</b></div>
-        <div class="rrow"><span>Played 60+ min</span><b>+2</b></div>
-        <div class="rrow"><span>Clean sheet — GK / DEF</span><b>+4</b></div>
-        <div class="rrow"><span>Clean sheet — MID</span><b>+1</b></div>
-        <div class="rrow"><span>GK saves (per 3)</span><b>+1</b></div>
+        <div class="rrow"><span>On the winning team</span><b>+1</b></div>
         <div class="rrow"><span>Player of the Match</span><b>+3</b></div>
         <div class="rrow"><span>Yellow card</span><b>-1</b></div>
         <div class="rrow"><span>Red card</span><b>-3</b></div>
@@ -509,7 +503,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
     <div style="background:var(--card2);border:1px solid var(--gold2);border-radius:10px;padding:.85rem;margin-top:1rem">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">⚠️ Disclaimer</div>
-      <div style="font-size:11px;color:var(--muted);line-height:1.6">This game is for <b style="color:var(--text)">fun and entertainment purposes only</b>. It is a friendly community game run by KANE (Kerala Association of New England). There are no real-money stakes, betting, or gambling involved. Player data and scoring are unofficial and may not perfectly match official sources. This app is not affiliated with, endorsed by, or connected to FIFA. Enjoy the game in good spirit! 🎉</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6">This game is for <b style="color:var(--text)">fun and entertainment purposes only</b>. It is a friendly community game run by KANE (Kerala Association of New England). There are no real-money stakes, betting, or gambling involved. Player data and scoring are unofficial and may not perfectly match official sources. This app is not affiliated with, endorsed by, or connected to any official football governing body, tournament organizer, or league. Enjoy the game in good spirit! 🎉</div>
     </div>
 
     <div style="font-size:9px;color:var(--muted);line-height:1.55;margin-top:.9rem;padding-top:.7rem;border-top:1px solid var(--border)">
@@ -522,7 +516,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <div id="tab-admin" class="panel">
     <div style="background:linear-gradient(135deg,rgba(232,184,75,.15),rgba(20,40,28,.5));border:1px solid var(--gold);border-radius:12px;padding:.85rem;margin-bottom:1rem">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--gold)">🔑 KANE Admin — Enter Match Results</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5">Read the final score off <a href="https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/standings" target="_blank" style="color:var(--gold)">FIFA.com</a> and enter it here. Saved results sync to every member and score everyone's squad automatically.</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5">Read the final score off a trusted source like <a href="https://www.espn.com/soccer/" target="_blank" style="color:var(--gold)">ESPN</a> and enter it here. Saved results sync to every member and score everyone's squad automatically.</div>
     </div>
 
     <div class="fi"><label class="fl">Select Match</label>
@@ -539,7 +533,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div class="fi" style="flex:1"><label class="fl">🟥 Red Cards</label><textarea class="finput" id="adm-reds" rows="2" placeholder="one per line" style="font-family:inherit;resize:vertical"></textarea></div>
     </div>
     <div class="fi"><label class="fl">⭐ Player(s) of the Match (one per line)</label><textarea class="finput" id="adm-potm" rows="1" placeholder="L. Messi" style="font-family:inherit;resize:vertical"></textarea></div>
-    <div style="font-size:10px;color:var(--muted);margin-bottom:8px;line-height:1.5">💡 Clean sheets are detected automatically from the score (0 conceded = clean sheet). Player names should roughly match the squad list — last name is enough.</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:8px;line-height:1.5">💡 Enter the final score, goalscorers, assists, cards and Player of the Match. Players from the <b>winning team</b> each get +1 automatically (subs included). Last name is enough for matching.</div>
     <button class="btn-p" onclick="admSaveResult()">💾 Save This Result</button>
     <button class="btn-s" style="margin-top:6px" onclick="admClearResult()">🗑 Clear This Match Result</button>
 
@@ -549,7 +543,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <!-- KNOCKOUT FIXTURE SETUP -->
     <div style="margin-top:1.4rem;padding-top:1rem;border-top:1px solid var(--border)">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--gold)">🏆 Knockout Bracket Setup</div>
-      <div style="font-size:11px;color:var(--muted);margin:4px 0 10px;line-height:1.5">Once the group stage ends and the bracket is confirmed on <a href="https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/standings" target="_blank" style="color:var(--gold)">FIFA.com</a>, enter each knockout match below. This activates the same per-day squad logic (auto-pick & "playing next match day" filter) for the knockout rounds.</div>
+      <div style="font-size:11px;color:var(--muted);margin:4px 0 10px;line-height:1.5">Once the group stage ends and the bracket is confirmed on a trusted source like <a href="https://www.espn.com/soccer/" target="_blank" style="color:var(--gold)">ESPN</a>, enter each knockout match below. This activates the same per-day squad logic (auto-pick & "playing next match day" filter) for the knockout rounds.</div>
       <div class="fi"><label class="fl">Knockout Match</label>
         <select class="finput" id="adm-ko-slot"></select>
       </div>
@@ -594,6 +588,7 @@ const FORMATIONS={'442':{fwd:2,mid:4,def:4},'433':{fwd:3,mid:3,def:4},'352':{fwd
 const STAR_IDS=new Set([1152,1153,262,1030,1033,394,1034,1162,397,399,400,529,657,789,790,1049,1180,157,1057,35,36,163,166,167,423,425,426,680,1079,448,193,704,452,965,712,1226,459,1232,728,732,349,862,865,227,998,999,105,111,241,244,374,1148,1023]);
 let NATIONS_BY_DATE={"2026-06-11": ["Czechia", "Mexico", "S. Africa", "S. Korea"], "2026-06-12": ["Bosnia", "Canada", "Paraguay", "USA"], "2026-06-13": ["Australia", "Brazil", "Haiti", "Morocco", "Qatar", "Scotland", "Switzerland", "Türkiye"], "2026-06-14": ["Curaçao", "Ecuador", "Germany", "Ivory Coast", "Japan", "Netherlands", "Sweden", "Tunisia"], "2026-06-15": ["Belgium", "Cape Verde", "Egypt", "Iran", "New Zealand", "Saudi Arabia", "Spain", "Uruguay"], "2026-06-16": ["Algeria", "Argentina", "Austria", "France", "Iraq", "Jordan", "Norway", "Senegal"], "2026-06-17": ["Colombia", "Croatia", "DR Congo", "England", "Ghana", "Panama", "Portugal", "Uzbekistan"], "2026-06-18": ["Bosnia", "Canada", "Czechia", "Mexico", "Qatar", "S. Africa", "S. Korea", "Switzerland"], "2026-06-19": ["Australia", "Brazil", "Haiti", "Morocco", "Paraguay", "Scotland", "Türkiye", "USA"], "2026-06-20": ["Curaçao", "Ecuador", "Germany", "Ivory Coast", "Japan", "Netherlands", "Sweden", "Tunisia"], "2026-06-21": ["Belgium", "Cape Verde", "Egypt", "Iran", "New Zealand", "Saudi Arabia", "Spain", "Uruguay"], "2026-06-22": ["Algeria", "Argentina", "Austria", "France", "Iraq", "Jordan", "Norway", "Senegal"], "2026-06-23": ["Colombia", "Croatia", "DR Congo", "England", "Ghana", "Panama", "Portugal", "Uzbekistan"], "2026-06-24": ["Bosnia", "Brazil", "Canada", "Czechia", "Haiti", "Mexico", "Morocco", "Qatar", "S. Africa", "S. Korea", "Scotland", "Switzerland"], "2026-06-25": ["Australia", "Curaçao", "Ecuador", "Germany", "Ivory Coast", "Japan", "Netherlands", "Paraguay", "Sweden", "Tunisia", "Türkiye", "USA"], "2026-06-26": ["Belgium", "Cape Verde", "Egypt", "France", "Iran", "Iraq", "New Zealand", "Norway", "Saudi Arabia", "Senegal", "Spain", "Uruguay"], "2026-06-27": ["Algeria", "Argentina", "Austria", "Colombia", "Croatia", "DR Congo", "England", "Ghana", "Jordan", "Panama", "Portugal", "Uzbekistan"]};
 const DAILY_KICKOFFS={"2026-06-11": "19:00", "2026-06-12": "19:00", "2026-06-13": "19:00", "2026-06-14": "17:00", "2026-06-15": "17:00", "2026-06-16": "20:00", "2026-06-17": "20:00", "2026-06-18": "16:00", "2026-06-19": "17:00", "2026-06-20": "16:00", "2026-06-21": "16:00", "2026-06-22": "16:00", "2026-06-23": "16:00", "2026-06-24": "22:00", "2026-06-25": "20:00", "2026-06-26": "20:00", "2026-06-27": "20:00", "2026-06-28": "19:00", "2026-06-29": "16:00", "2026-07-01": "16:00", "2026-07-02": "16:00", "2026-07-03": "16:00", "2026-07-04": "16:00", "2026-07-05": "20:00", "2026-07-06": "20:00", "2026-07-07": "20:00", "2026-07-08": "20:00", "2026-07-09": "20:00", "2026-07-11": "20:00", "2026-07-14": "20:00", "2026-07-15": "20:00", "2026-07-18": "20:00", "2026-07-19": "19:00"};
+const LOCK_WINDOWS={"2026-06-11": {"lock": "2026-06-11T19:00:00Z", "reopen": "2026-06-12T04:15:00Z"}, "2026-06-12": {"lock": "2026-06-12T19:00:00Z", "reopen": "2026-06-13T03:15:00Z"}, "2026-06-13": {"lock": "2026-06-13T19:00:00Z", "reopen": "2026-06-14T05:15:00Z"}, "2026-06-14": {"lock": "2026-06-14T04:00:00Z", "reopen": "2026-06-15T04:15:00Z"}, "2026-06-15": {"lock": "2026-06-15T16:00:00Z", "reopen": "2026-06-16T03:15:00Z"}, "2026-06-16": {"lock": "2026-06-16T19:00:00Z", "reopen": "2026-06-17T03:15:00Z"}, "2026-06-17": {"lock": "2026-06-17T04:00:00Z", "reopen": "2026-06-18T03:15:00Z"}, "2026-06-18": {"lock": "2026-06-18T16:00:00Z", "reopen": "2026-06-19T03:15:00Z"}, "2026-06-19": {"lock": "2026-06-19T19:00:00Z", "reopen": "2026-06-20T03:15:00Z"}, "2026-06-20": {"lock": "2026-06-20T04:00:00Z", "reopen": "2026-06-21T04:15:00Z"}, "2026-06-21": {"lock": "2026-06-21T16:00:00Z", "reopen": "2026-06-22T03:15:00Z"}, "2026-06-22": {"lock": "2026-06-22T17:00:00Z", "reopen": "2026-06-23T05:15:00Z"}, "2026-06-23": {"lock": "2026-06-23T17:00:00Z", "reopen": "2026-06-24T04:15:00Z"}, "2026-06-24": {"lock": "2026-06-24T19:00:00Z", "reopen": "2026-06-25T03:15:00Z"}, "2026-06-25": {"lock": "2026-06-25T20:00:00Z", "reopen": "2026-06-26T04:15:00Z"}, "2026-06-26": {"lock": "2026-06-26T19:00:00Z", "reopen": "2026-06-27T05:15:00Z"}, "2026-06-27": {"lock": "2026-06-27T19:00:00Z", "reopen": "2026-06-28T04:15:00Z"}, "2026-06-28": {"lock": "2026-06-28T23:00:00Z", "reopen": "2026-06-29T01:15:00Z"}, "2026-06-29": {"lock": "2026-06-29T20:00:00Z", "reopen": "2026-06-30T02:15:00Z"}, "2026-06-30": {"lock": "2026-06-30T20:00:00Z", "reopen": "2026-07-01T02:15:00Z"}, "2026-07-01": {"lock": "2026-07-01T20:00:00Z", "reopen": "2026-07-02T02:15:00Z"}, "2026-07-02": {"lock": "2026-07-02T20:00:00Z", "reopen": "2026-07-03T02:15:00Z"}, "2026-07-03": {"lock": "2026-07-03T20:00:00Z", "reopen": "2026-07-04T02:15:00Z"}, "2026-07-04": {"lock": "2026-07-04T16:00:00Z", "reopen": "2026-07-05T02:15:00Z"}, "2026-07-05": {"lock": "2026-07-05T16:00:00Z", "reopen": "2026-07-05T22:15:00Z"}, "2026-07-06": {"lock": "2026-07-06T20:00:00Z", "reopen": "2026-07-07T02:15:00Z"}, "2026-07-07": {"lock": "2026-07-07T20:00:00Z", "reopen": "2026-07-08T02:15:00Z"}, "2026-07-09": {"lock": "2026-07-09T20:00:00Z", "reopen": "2026-07-10T02:15:00Z"}, "2026-07-11": {"lock": "2026-07-11T20:00:00Z", "reopen": "2026-07-12T02:15:00Z"}, "2026-07-14": {"lock": "2026-07-14T19:00:00Z", "reopen": "2026-07-14T21:15:00Z"}, "2026-07-15": {"lock": "2026-07-15T19:00:00Z", "reopen": "2026-07-15T21:15:00Z"}, "2026-07-18": {"lock": "2026-07-18T19:00:00Z", "reopen": "2026-07-18T21:15:00Z"}, "2026-07-19": {"lock": "2026-07-19T19:00:00Z", "reopen": "2026-07-19T21:15:00Z"}};
 const STAGE_BUDGETS=[{"from": "2026-06-11", "to": "2026-06-27", "budget": 100, "label": "Group Stage"}, {"from": "2026-06-28", "to": "2026-07-19", "budget": 105, "label": "Knockouts"}];
 
 const JCOL={'Algeria':'#006233','Argentina':'#75aadb','Australia':'#FFD700','Austria':'#ED2939','Belgium':'#2a2a2a','Bosnia':'#003DA5','Brazil':'#F7D116','Cape Verde':'#003893','Canada':'#CC0000','Colombia':'#FCD116','DR Congo':'#007FFF','Curaçao':'#003DA5','Czechia':'#11457E','Ecuador':'#FFD100','Egypt':'#CC0000','England':'#23244a','France':'#003189','Germany':'#3a3a3a','Ghana':'#006B3F','Haiti':'#00209F','Iran':'#239F40','Iraq':'#007A3D','Ivory Coast':'#F77F00','Japan':'#003087','Jordan':'#007A3D','S. Korea':'#CE1126','Mexico':'#006847','Morocco':'#CC0000','Netherlands':'#FF6B1A','New Zealand':'#2a2a2a','Norway':'#BA0C2F','Panama':'#DA121A','Paraguay':'#D52B1E','Portugal':'#006600','Qatar':'#8D1B3D','S. Africa':'#007A4D','Saudi Arabia':'#165C37','Scotland':'#003865','Senegal':'#00853F','Spain':'#CC0000','Sweden':'#006AA7','Switzerland':'#CC0000','Tunisia':'#E70013','Türkiye':'#E30A17','Uruguay':'#5AA7DB','USA':'#002868','Uzbekistan':'#1EB53A','Croatia':'#CC0000'};
@@ -648,28 +643,90 @@ function getStageBudget(){const t=getTodayUTC();for(let i=STAGE_BUDGETS.length-1
 function getMaxBudget(){return getStageBudget().budget;}
 
 // ---- TRANSFER LOCK (per day) ----
+// Daily squad snapshots: once a day's deadline passes, the squad used for that
+// day is frozen so later edits don't change how that day is scored.
+let squadSnapshots={}; // { 'YYYY-MM-DD': {squad:[...], captain, formation} }
+
+function snapshotKeyForToday(){return getTodayUTC();}
+// Capture the squad for the active lock window's date once locking begins
+function maybeSnapshotToday(){
+  const active=getActiveLockWindow();
+  if(!active)return;
+  const t=active.date;
+  if(!squadSnapshots[t]){
+    squadSnapshots[t]={squad:[...squad],captain:captainId,formation:formation,frozen:Date.now()};
+    persistSnapshots();
+  }
+}
+function persistSnapshots(){
+  try{localStorage.setItem('kane_snaps_'+acctStorageKey(userKey),JSON.stringify(squadSnapshots));}catch(e){}
+  if(fbReady()&&!isDemo()){try{const {doc,setDoc}=window._fbFns;setDoc(doc(window._fbDB,'snapshots',acctStorageKey(userKey)),{data:JSON.stringify(squadSnapshots),updated:Date.now()});}catch(e){}}
+}
+function loadSnapshots(){
+  try{const s=localStorage.getItem('kane_snaps_'+acctStorageKey(userKey));if(s)squadSnapshots=JSON.parse(s);}catch(e){}
+}
+// The squad to SCORE for a given match date: the frozen snapshot if it exists,
+// otherwise the current live squad (e.g. day still open).
+function scoringSquadForDate(date){
+  const snap=squadSnapshots[date];
+  if(snap&&snap.squad&&snap.squad.length)return snap;
+  return {squad:squad,captain:captainId,formation:formation};
+}
+
 function getDeadlineToday(){const t=getTodayUTC(),ko=DAILY_KICKOFFS[t];if(!ko)return null;const[h,m]=ko.split(':').map(Number),d=new Date();d.setUTCHours(h,m,0,0);return new Date(d.getTime()-1000);}
 function getNextMatchDay(){const t=getTodayUTC();return Object.keys(DAILY_KICKOFFS).sort().find(d=>d>t)||null;}
+
+// Find the active lock window: a member is LOCKED if now is between any day's
+// first kickoff and that day's last-game final whistle (which may be next day).
+function getActiveLockWindow(){
+  const now=new Date();
+  for(const date of Object.keys(LOCK_WINDOWS)){
+    const w=LOCK_WINDOWS[date];
+    const lock=new Date(w.lock),reopen=new Date(w.reopen);
+    if(now>=lock&&now<reopen)return {date,lock,reopen};
+  }
+  return null;
+}
+// The next upcoming lock (for countdown when currently open)
+function getNextLock(){
+  const now=new Date();let best=null;
+  for(const date of Object.keys(LOCK_WINDOWS)){
+    const lock=new Date(LOCK_WINDOWS[date].lock);
+    if(lock>now&&(!best||lock<best.lock))best={date,lock};
+  }
+  return best;
+}
 function updateTransferBar(){
   const bar=document.getElementById('tbar');if(!bar)return;
   const stage=getStageBudget();
   const sl=document.getElementById('stage-lbl');if(sl)sl.textContent=stage.label+' · $'+stage.budget+'M';
-  const dl=getDeadlineToday(),now=new Date();
   const icon=document.getElementById('tbar-icon'),txt=document.getElementById('tbar-txt'),sub=document.getElementById('tbar-sub'),cd=document.getElementById('tbar-cd'),badge=document.getElementById('tbar-badge');
-  if(!dl){const nx=getNextMatchDay();bar.className='tbar topen';icon.textContent='✅';txt.textContent='Transfers OPEN';sub.textContent=(nx?'Next match day: '+nx:'Tournament complete');cd.className='tbar-timer';cd.textContent='OPEN';badge.innerHTML='<span class="tbadge tbopen">NO GAMES TODAY</span>';transferOpen=true;return;}
-  const ms=dl-now;
-  if(ms<=0){bar.className='tbar tlocked';icon.textContent='🔒';txt.textContent='LOCKED';sub.textContent='Games in progress · reopens tomorrow';cd.className='tbar-timer locked';cd.textContent='LOCKED';badge.innerHTML='<span class="tbadge tblocked">LOCKED</span>';transferOpen=false;}
-  else{
-    bar.className='tbar topen';icon.textContent=ms<3600000?'⏰':'⏳';
-    txt.textContent='Transfers lock in:';
-    sub.textContent=stage.label+' · $'+stage.budget+'M budget';
+  const active=getActiveLockWindow();
+  if(active){
+    // LOCKED — show time until the last game's final whistle (reopen)
+    const now=new Date(),ms=active.reopen-now;
+    bar.className='tbar tlocked';icon.textContent='🔒';txt.textContent='LOCKED';
+    sub.textContent='Reopens after the last game final whistle';
     const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
     const pad=n=>String(n).padStart(2,'0');
-    cd.textContent=(h>0?h+':':'')+pad(m)+':'+pad(s);
-    cd.className='tbar-timer'+(ms<3600000?' urgent':'');
-    badge.innerHTML='<span class="tbadge tbopen">OPEN</span>';
-    transferOpen=true;
+    cd.className='tbar-timer locked';cd.textContent=(h>0?h+':':'')+pad(m)+':'+pad(s);
+    badge.innerHTML='<span class="tbadge tblocked">LOCKED</span>';
+    transferOpen=false;maybeSnapshotToday();
+    return;
   }
+  // OPEN — count down to the next lock (first kickoff of next match day)
+  const nl=getNextLock();
+  if(!nl){bar.className='tbar topen';icon.textContent='✅';txt.textContent='Transfers OPEN';sub.textContent='Tournament complete';cd.className='tbar-timer';cd.textContent='OPEN';badge.innerHTML='<span class="tbadge tbopen">OPEN</span>';transferOpen=true;return;}
+  const now=new Date(),ms=nl.lock-now;
+  bar.className='tbar topen';icon.textContent=ms<3600000?'⏰':'⏳';
+  txt.textContent='Transfers lock in:';
+  sub.textContent=stage.label+' · $'+stage.budget+'M budget';
+  const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
+  const pad=n=>String(n).padStart(2,'0');
+  cd.textContent=(h>0?h+':':'')+pad(m)+':'+pad(s);
+  cd.className='tbar-timer'+(ms<3600000?' urgent':'');
+  badge.innerHTML='<span class="tbadge tbopen">OPEN</span>';
+  transferOpen=true;
 }
 function startClock(){updateTransferBar();if(clockTimer)clearInterval(clockTimer);clockTimer=setInterval(updateTransferBar,1000);}
 
@@ -826,7 +883,7 @@ function launchApp(n,t,key,sq,cap,hist,pts,form){
   document.getElementById('budget-area').style.display='block';
   // set active formation button
   document.querySelectorAll('.fbtn').forEach(b=>{if(b.textContent.replace(/-/g,'')===form)b.classList.add('active');else if(['4-4-2','4-3-3','3-5-2','4-2-3-1'].includes(b.textContent))b.classList.remove('active');});
-  updBudget();startClock();renderSquad();buildCountryDropdown();renderMarket();renderLB();renderFixtures();renderAccount();
+  loadSnapshots();updBudget();startClock();renderSquad();buildCountryDropdown();renderMarket();renderLB();renderFixtures();renderAccount();
   syncSharedBoard();pushToSharedBoard();
   admLoadResults();
   admLoadKO();
@@ -1003,7 +1060,7 @@ function renderAccount(){
 // ============================================================
 // NAV
 // ============================================================
-function switchTab(t){['squad','market','standings','fixtures','points','account','rules','admin'].forEach((n,i)=>{const nt=document.querySelectorAll('.nt')[i];if(nt)nt.classList.toggle('active',n===t);const tab=document.getElementById('tab-'+n);if(tab)tab.classList.toggle('active',n===t);});if(t==='account')renderAccount();if(t==='standings')syncSharedBoard();if(t==='fixtures')renderFixtures();}
+function switchTab(t){['squad','market','standings','fixtures','points','account','rules','admin'].forEach((n,i)=>{const nt=document.querySelectorAll('.nt')[i];if(nt)nt.classList.toggle('active',n===t);const tab=document.getElementById('tab-'+n);if(tab)tab.classList.toggle('active',n===t);});if(t==='account')renderAccount();if(t==='standings')syncSharedBoard();if(t==='fixtures'){renderFixtures();fetchScoresForFixtures();}}
 
 // ============================================================
 // SQUAD RENDER
@@ -1154,8 +1211,37 @@ function renderLB(){
 // ============================================================
 // FIXTURES
 // ============================================================
-function switchFix(m,el){fixMode=m;document.querySelectorAll('#tab-fixtures .itab').forEach(e=>e.classList.remove('active'));el.classList.add('active');document.getElementById('fix-group').style.display=m==='group'?'':'none';document.getElementById('fix-ko').style.display=m==='ko'?'':'none';}
+function switchFix(m,el){fixMode=m;document.querySelectorAll('#tab-fixtures .itab').forEach(e=>e.classList.remove('active'));el.classList.add('active');document.getElementById('fix-date').style.display=m==='date'?'':'none';document.getElementById('fix-group').style.display=m==='group'?'':'none';document.getElementById('fix-ko').style.display=m==='ko'?'':'none';}
 function renderFixtures(){
+  // ---- BY DATE (chronological, with scores when available) ----
+  // Map display date (e.g. 'Jun 11') to ISO so we can sort and mark today.
+  const monthMap={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+  function dispToIso(d){const parts=d.split(' ');if(parts.length<2)return '2026-99-99';const mo=monthMap[parts[0]]||'99';const day=String(parseInt(parts[1])||0).padStart(2,'0');return '2026-'+mo+'-'+day;}
+  const today=getTodayUTC();
+  // Group group-stage fixtures by date
+  const byDate={};
+  GS_FIXTURES.forEach(f=>{const iso=dispToIso(f.d);if(!byDate[iso])byDate[iso]={disp:f.d,games:[]};byDate[iso].games.push(f);});
+  let dhtml='';
+  Object.keys(byDate).sort().forEach(iso=>{
+    const blk=byDate[iso];
+    const isToday=iso===today;
+    const isPast=iso<today;
+    const dayLabel=blk.disp+(isToday?' · TODAY':'');
+    dhtml+='<div class="gblk"><div class="glbl" style="'+(isToday?'color:var(--gold)':'')+'">'+(isToday?'🔴 ':'📅 ')+dayLabel+'</div>';
+    blk.games.forEach(f=>{
+      const key=f.h+'_'+f.a;const sc=GS_SCORES[key]||f.sc;const has=sc&&sc!=='';
+      const statusLabel=has?'FT':(isPast?'—':'vs');
+      dhtml+='<div class="fix"><div class="fmeta">Group '+f.g+(f.t?' · '+f.t:'')+'</div><div class="fteams"><div class="ft">'+f.h+'</div><div><div class="fsc">'+(has?sc:statusLabel)+'</div><div class="fst '+(has?'sft':'sup')+'">'+(has?'Full Time':(isToday?'Today':blk.disp))+'</div></div><div class="ft ftr">'+f.a+'</div></div></div>';
+    });
+    dhtml+='</div>';
+  });
+  // Append knockout rounds at the end (teams TBD until set)
+  let last='';
+  KO_FIXTURES.forEach(f=>{if(f.r!==last){if(last)dhtml+='</div>';dhtml+='<div class="gblk"><div class="glbl">🏆 '+f.r+'</div>';last=f.r;}dhtml+='<div class="fix"><div class="fmeta">'+f.d+(f.v?' · '+f.v:'')+'</div><div class="fteams"><div class="ft">'+f.h+'</div><div><div class="fsc">vs</div><div class="fst sup">'+f.d+'</div></div><div class="ft ftr">'+f.a+'</div></div></div>';});
+  if(last)dhtml+='</div>';
+  const fd=document.getElementById('fix-date');if(fd)fd.innerHTML=dhtml;
+
+  // ---- BY GROUP ----
   let g='';
   Object.keys(GROUPS).forEach(grp=>{
     g+='<div class="gblk"><div class="glbl">Group '+grp+': '+GROUPS[grp].join(' · ')+'</div>';
@@ -1166,7 +1252,7 @@ function renderFixtures(){
     g+='</div>';
   });
   document.getElementById('fix-group').innerHTML=g;
-  let k='',last='';
+  let k='';last='';
   KO_FIXTURES.forEach(f=>{if(f.r!==last){if(last)k+='</div>';k+='<div class="gblk"><div class="glbl">'+f.r+'</div>';last=f.r;}k+='<div class="fix"><div class="fmeta">'+f.d+(f.v?' · '+f.v:'')+'</div><div class="fteams"><div class="ft">'+f.h+'</div><div><div class="fsc">vs</div><div class="fst sup">'+f.d+'</div></div><div class="ft ftr">'+f.a+'</div></div></div>';});
   k+='</div>';
   document.getElementById('fix-ko').innerHTML=k;
@@ -1204,7 +1290,7 @@ async function fetchLive(){
       renderFixtures();
       setStatus('✅ '+played.length+' real results loaded','ok');
     }
-    document.getElementById('api-upd').textContent='Updated '+new Date().toLocaleTimeString()+' · openfootball public feed (may lag — verify at FIFA.com)';
+    document.getElementById('api-upd').textContent='Updated '+new Date().toLocaleTimeString()+' · public football feed (may lag — verify at espn.com)';
     calcPoints();
   }catch(e){
     // Network/data error — show honest message, no fake data
@@ -1214,23 +1300,21 @@ async function fetchLive(){
   }
 }
 
-const SC={goal_FW:4,goal_MF:5,goal_DF:6,goal_GK:6,assist:3,cs_gk:4,cs_def:4,cs_mid:1,played60:2,played:1,saves3:1,recov3:1,potm:3,yellow:-1,red:-3,owngoal:-2,penmiss:-2,star:0};
+const SC={goal_FW:4,goal_MF:5,goal_DF:6,goal_GK:6,assist:3,win:1,cs_gk:4,cs_def:4,cs_mid:1,played60:2,played:1,saves3:1,recov3:1,potm:3,yellow:-1,red:-3,owngoal:-2,penmiss:-2,star:0};
 function fuzzy(a,b){if(!a||!b)return false;const c=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');if(c(a)===c(b))return true;const la=a.split(/\s+/).pop(),lb=b.split(/\s+/).pop();return c(la)===c(lb)&&c(la).length>2;}
 function calcPlayerPts(p,matches,isCap){
   let pts=0;const bd=[];const pm=matches.filter(m=>m.home===p.c||m.away===p.c);
   if(!pm.length)return{pts:0,bd:['No match yet']};
   pm.forEach(m=>{
-    const opp=m.home===p.c?m.as:m.hs,cs=opp===0;
-    pts+=SC.played60;bd.push('▶ +'+SC.played60);
+    const myScore=m.home===p.c?m.hs:m.as,oppScore=m.home===p.c?m.as:m.hs;
+    const won=myScore>oppScore;
+    // Team-win point: if your player's nation WON, every player from that team
+    // earns +1 (starters and subs alike — rewards the result, not who played).
+    if(won){pts+=SC.win;bd.push('🏆 Win +'+SC.win);}
     const g=(m.goals||[]).filter(x=>fuzzy(x.n,p.n)).length;
     if(g){const gv=SC['goal_'+p.p];pts+=g*gv;bd.push('⚽ '+g+'G +'+(g*gv));}
     const a=(m.assists||[]).filter(x=>fuzzy(x.n,p.n)).length;
     if(a){pts+=a*SC.assist;bd.push('🅰️ '+a+'A +'+(a*SC.assist));}
-    if(cs){
-      if(p.p==='GK'){pts+=SC.cs_gk;bd.push('🧤 CS +'+SC.cs_gk);}
-      else if(p.p==='DF'){pts+=SC.cs_def;bd.push('🛡️ CS +'+SC.cs_def);}
-      else if(p.p==='MF'){pts+=SC.cs_mid;bd.push('🛡️ CS +'+SC.cs_mid);}
-    }
     if((m.yellows||[]).some(y=>fuzzy(y.n,p.n))){pts+=SC.yellow;bd.push('🟨 '+SC.yellow);}
     if((m.reds||[]).some(r=>fuzzy(r.n,p.n))){pts+=SC.red;bd.push('🟥 '+SC.red);}
     if((m.potm||[]).some(x=>fuzzy(x,p.n))){pts+=SC.potm;bd.push('⭐ POTM +'+SC.potm);}
@@ -1241,6 +1325,9 @@ function calcPlayerPts(p,matches,isCap){
 }
 function calcPoints(){
   const m=liveMatches; // only REAL results; empty until matches are played
+  loadSnapshots();
+  // For scoring, group matches by date and use the squad that was frozen for that date.
+  // Falls back to the live squad for any date without a snapshot (e.g. still-open day).
   const f=FORMATIONS[formation];
   const gks=squad.filter(id=>gp(id)&&gp(id).p==='GK').slice(0,1),dfs=squad.filter(id=>gp(id)&&gp(id).p==='DF').slice(0,f.def),mfs=squad.filter(id=>gp(id)&&gp(id).p==='MF').slice(0,f.mid),fws=squad.filter(id=>gp(id)&&gp(id).p==='FW').slice(0,f.fwd);
   const xi=[...gks,...dfs,...mfs,...fws];
@@ -1256,7 +1343,29 @@ function calcPoints(){
   }
 
   let total=0,cards='';
-  xi.forEach(id=>{const p=gp(id);if(!p)return;const cap=id===captainId,r=calcPlayerPts(p,m,cap);total+=r.pts;const chips=r.bd.map(b=>'<span class="chip '+(b.includes('-')?'neg':'pos')+'">'+b+'</span>').join('');cards+='<div class="ptcard '+(cap?'cap':'')+'"><div class="ptav">'+avHtml(p,34)+'</div><div class="pti"><div class="ptn">'+p.f+' '+p.n+(cap?' ©':'')+'</div><div class="ptm">'+p.c+' · '+p.p+' · '+p.cl+'</div><div class="ptbr">'+chips+'</div></div><div class="ptt '+(cap?'c':'')+'">'+r.pts+'</div></div>';});
+  // Build the scoring XI per match date using the frozen snapshot for that date
+  m.forEach(()=>{}); // (kept for clarity; per-player loop below handles dates)
+  // We score each STARTING XI player against matches; to honor snapshots, compute
+  // each match's contribution using that date's frozen squad.
+  const scored={}; // playerId -> {pts, bd, cap}
+  m.forEach(mt=>{
+    const snap=scoringSquadForDate(mt.date||getTodayUTC());
+    const sf=FORMATIONS[snap.formation||formation];
+    const sgk=snap.squad.filter(id=>gp(id)&&gp(id).p==='GK').slice(0,1),sdf=snap.squad.filter(id=>gp(id)&&gp(id).p==='DF').slice(0,sf.def),smf=snap.squad.filter(id=>gp(id)&&gp(id).p==='MF').slice(0,sf.mid),sfw=snap.squad.filter(id=>gp(id)&&gp(id).p==='FW').slice(0,sf.fwd);
+    const sxi=[...sgk,...sdf,...smf,...sfw];
+    sxi.forEach(id=>{
+      const p=gp(id);if(!p)return;
+      // does this player's nation feature in this match?
+      if(p.c!==mt.home&&p.c!==mt.away)return;
+      const cap=id===(snap.captain||captainId);
+      const r=calcPlayerPts(p,[mt],cap);
+      if(!scored[id])scored[id]={pts:0,bd:[],cap:cap};
+      scored[id].pts+=r.pts;r.bd.forEach(b=>scored[id].bd.push(b));
+    });
+  });
+  // Render cards from scored players (sorted by points)
+  const scoredIds=Object.keys(scored).map(Number).sort((a,b)=>scored[b].pts-scored[a].pts);
+  scoredIds.forEach(id=>{const p=gp(id);if(!p)return;const s=scored[id];total+=s.pts;const chips=s.bd.map(b=>'<span class="chip '+(b.includes('-')?'neg':'pos')+'">'+b+'</span>').join('');cards+='<div class="ptcard '+(s.cap?'cap':'')+'"><div class="ptav">'+avHtml(p,34)+'</div><div class="pti"><div class="ptn">'+p.f+' '+p.n+(s.cap?' ©':'')+'</div><div class="ptm">'+p.c+' · '+p.p+' · '+p.cl+'</div><div class="ptbr">'+chips+'</div></div><div class="ptt '+(s.cap?'c':'')+'">'+s.pts+'</div></div>';});
   mdPts=total;
   recordWeeklyPoints(total);
   document.getElementById('s-md').textContent=total;
@@ -1392,13 +1501,45 @@ async function admLoadResults(){
 function rebuildLiveFromAdmin(){
   const arr=Object.values(adminResults).map(r=>({home:tn(stripFlag(r.home)),away:tn(stripFlag(r.away)),hs:r.hs,as:r.as,date:r.date||'',round:r.round||'',goals:(r.goals||[]).map(n=>({n:n,t:''})),assists:(r.assists||[]).map(n=>({n:n,t:''})),yellows:(r.yellows||[]).map(n=>({n:n})),reds:(r.reds||[]).map(n=>({n:n})),potm:(r.potm||[]),saves:[]}));
   if(arr.length){liveMatches=arr;}
+  // Admin override: push admin scores onto the fixtures display too
+  Object.values(adminResults).forEach(r=>{
+    GS_FIXTURES.forEach(f=>{
+      if(f.h.includes(stripFlag(r.home))&&f.a.includes(stripFlag(r.away))){GS_SCORES[f.h+'_'+f.a]=r.hs+'-'+r.as;}
+    });
+  });
+  try{renderFixtures();}catch(e){}
 }
 function admRecalcAll(){rebuildLiveFromAdmin();calcPoints();showToast('🔄 Scores recalculated');}
+
+// Pull final scores from the live feed for the Fixtures display.
+// Admin-entered results ALWAYS take priority (override anytime).
+async function fetchScoresForFixtures(){
+  try{
+    const res=await fetch(OF_URL+'?t='+Date.now());
+    if(!res.ok)return;
+    const data=await res.json();
+    const today=getTodayUTC();
+    (data.matches||[]).filter(m=>m.score&&m.score.ft&&m.date&&m.date<=today).forEach(m=>{
+      const home=tn(m.team1),away=tn(m.team2);
+      GS_FIXTURES.forEach(f=>{
+        if(f.h.includes(home)&&f.a.includes(away)){
+          const key=f.h+'_'+f.a;
+          // Only set from feed if the admin hasn't overridden this match
+          const adminHas=Object.values(adminResults).some(r=>f.h.includes(stripFlag(r.home))&&f.a.includes(stripFlag(r.away)));
+          if(!adminHas)GS_SCORES[key]=m.score.ft[0]+'-'+m.score.ft[1];
+        }
+      });
+    });
+    // Re-apply admin scores last so they always win
+    Object.values(adminResults).forEach(r=>{GS_FIXTURES.forEach(f=>{if(f.h.includes(stripFlag(r.home))&&f.a.includes(stripFlag(r.away))){GS_SCORES[f.h+'_'+f.a]=r.hs+'-'+r.as;}});});
+    renderFixtures();
+  }catch(e){/* offline or feed down — keep existing scores */}
+}
 
 // ============================================================
 // KNOCKOUT BRACKET SETUP (admin) — official dates, teams TBD
 // ============================================================
-// Official R32 single-match-per-slot dates (from FIFA schedule). One slot = one match on one date.
+// Official R32 single-match-per-slot dates (from the published tournament schedule). One slot = one match on one date.
 const KO_SLOTS=[
 {id:'R32-1',r:'Round of 32',date:'2026-06-28',label:'Jun 28 · R32 (A2 v B2)'},
 {id:'R32-2',r:'Round of 32',date:'2026-06-29',label:'Jun 29 · R32 (C1 v F2)'},
@@ -1559,7 +1700,7 @@ different people's devices. To turn on the KANE-wide board:
    them into the league. Phone-number registrations and demo mode skip
    this and play locally.
 
-5. Upload this HTML file to your GitHub repo (aphili1/KANE-FIFA-Fantasy),
+5. Upload this HTML file to your GitHub repo,
    rename to index.html, enable GitHub Pages. The shared leaderboard now
    works across everyone's phones and laptops automatically.
 
