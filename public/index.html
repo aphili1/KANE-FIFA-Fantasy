@@ -1375,7 +1375,7 @@ function calcPoints(){
   const scoredIds=Object.keys(scored).map(Number).sort((a,b)=>scored[b].pts-scored[a].pts);
   scoredIds.forEach(id=>{const p=gp(id);if(!p)return;const s=scored[id];total+=s.pts;const chips=s.bd.map(b=>'<span class="chip '+(b.includes('-')?'neg':'pos')+'">'+b+'</span>').join('');cards+='<div class="ptcard '+(s.cap?'cap':'')+'"><div class="ptav">'+avHtml(p,34)+'</div><div class="pti"><div class="ptn">'+p.f+' '+p.n+(s.cap?' ©':'')+(s.bench?' <span style="font-size:9px;color:var(--muted)">(bench)</span>':'')+'</div><div class="ptm">'+p.c+' · '+p.p+' · '+p.cl+'</div><div class="ptbr">'+chips+'</div></div><div class="ptt '+(s.cap?'c':'')+'">'+s.pts+'</div></div>';});
   mdPts=total;
-  recordWeeklyPoints(total);
+  recordDailyPoints(total);
   document.getElementById('s-md').textContent=total;
   document.getElementById('s-total').textContent=allTimePts;
   const hasMatches=m.length>0;
@@ -1388,26 +1388,30 @@ function calcPoints(){
   else showToast('Squad saved — scoring starts June 11');
 }
 
-// Record weekly points — finds current week, updates or adds
-function recordWeeklyPoints(pts){
+// Record points. `total` is the cumulative score across ALL played matches
+// currently loaded, so all-time = total directly (no week-bucket overwrite bug).
+// We also track per-day points so the "This Week" view can show the latest day.
+function recordDailyPoints(total){
   const today=getTodayUTC();
-  // Determine week number (1-5 group stage, 6+ knockout) by date
-  let wk=1;
-  if(today>='2026-06-18')wk=2;
-  if(today>='2026-06-24')wk=3;
-  if(today>='2026-06-28')wk=4;
-  if(today>='2026-07-05')wk=5;
-  if(today>='2026-07-09')wk=6;
-  if(today>='2026-07-14')wk=7;
-  const existing=weeklyHistory.find(w=>w.week===wk);
-  if(existing){
-    // Replace if higher (latest score for the week)
-    existing.pts=pts;existing.date=today;
-  }else{
-    weeklyHistory.push({week:wk,pts:pts,date:today});
+  // All-time total is simply the full score across every played match.
+  allTimePts=total;
+  // Track a per-day breakdown for the weekly leaderboard view.
+  weeklyHistory=weeklyHistory||[];
+  const todayGames=(liveMatches||[]).filter(m=>(m.date||'')===today);
+  // Compute just today's points by scoring only today's matches
+  let todayPts=0;
+  if(todayGames.length){
+    const scored={};
+    todayGames.forEach(mt=>{
+      const snap=scoringSquadForDate(mt.date||today);
+      snap.squad.forEach(id=>{const p=gp(id);if(!p)return;if(p.c!==mt.home&&p.c!==mt.away)return;const cap=id===(snap.captain||captainId);const r=calcPlayerPts(p,[mt],cap);todayPts+=r.pts;});
+    });
   }
-  // All-time = sum of all weekly bests
-  allTimePts=weeklyHistory.reduce((s,w)=>s+w.pts,0);
+  const existing=weeklyHistory.find(w=>w.date===today);
+  if(existing){existing.pts=todayPts;}
+  else if(todayGames.length){weeklyHistory.push({date:today,pts:todayPts});}
+  // mdPts (shown as "this matchday") = today's points if there are games today, else the latest total
+  mdPts=todayGames.length?todayPts:total;
 }
 
 // ============================================================
