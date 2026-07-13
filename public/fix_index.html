@@ -428,7 +428,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div class="srrow"><span>❌ Penalty Miss</span><span class="srp">-2</span></div>
         <div class="srrow"><span>© Captain</span><span class="srp">×2</span></div>
       </div>
-      <div style="font-size:9px;color:var(--muted);margin-top:8px;line-height:1.5">Standard fantasy football scoring. Bench players don't score unless moved into your XI before the deadline.</div>
+      <div style="font-size:9px;color:var(--muted);margin-top:8px;line-height:1.5">Standard fantasy football scoring. All 15 squad players earn points — including your bench.</div>
     </div>
     <div id="pts-bd"></div>
     <button class="sbtn" style="width:100%;margin-top:.75rem" onclick="fetchLive()">🌐 Fetch Live Scores &amp; Calculate</button>
@@ -495,7 +495,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div class="rrow"><span>Penalty miss</span><b>-2</b></div>
         <div class="rrow"><span>Captain</span><b>×2</b></div>
       </div>
-      <div style="font-size:10px;color:var(--muted);margin-top:6px">Bench players don't score unless moved into your XI before the deadline.</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px">All 15 players in your squad score — bench players earn points too if they perform.</div>
     </div>
 
     <div class="rsec">
@@ -1330,29 +1330,29 @@ function calcPoints(){
   }
 
   let total=0,cards='';
-  // Build the scoring XI per match date using the frozen snapshot for that date
-  m.forEach(()=>{}); // (kept for clarity; per-player loop below handles dates)
-  // We score each STARTING XI player against matches; to honor snapshots, compute
-  // each match's contribution using that date's frozen squad.
-  const scored={}; // playerId -> {pts, bd, cap}
+  // Score the FULL squad (all 15 including bench) for each match, using the
+  // frozen snapshot for that match's date. Bench players earn points too.
+  const scored={}; // playerId -> {pts, bd, cap, bench}
   m.forEach(mt=>{
     const snap=scoringSquadForDate(mt.date||getTodayUTC());
     const sf=FORMATIONS[snap.formation||formation];
+    // Determine starters (for captain + display) vs full squad (for scoring)
     const sgk=snap.squad.filter(id=>gp(id)&&gp(id).p==='GK').slice(0,1),sdf=snap.squad.filter(id=>gp(id)&&gp(id).p==='DF').slice(0,sf.def),smf=snap.squad.filter(id=>gp(id)&&gp(id).p==='MF').slice(0,sf.mid),sfw=snap.squad.filter(id=>gp(id)&&gp(id).p==='FW').slice(0,sf.fwd);
-    const sxi=[...sgk,...sdf,...smf,...sfw];
-    sxi.forEach(id=>{
+    const starterIds=new Set([...sgk,...sdf,...smf,...sfw].map(Number));
+    // Score EVERY player in the squad (starters + bench)
+    snap.squad.forEach(id=>{
       const p=gp(id);if(!p)return;
       // does this player's nation feature in this match?
       if(p.c!==mt.home&&p.c!==mt.away)return;
       const cap=id===(snap.captain||captainId);
       const r=calcPlayerPts(p,[mt],cap);
-      if(!scored[id])scored[id]={pts:0,bd:[],cap:cap};
+      if(!scored[id])scored[id]={pts:0,bd:[],cap:cap,bench:!starterIds.has(Number(id))};
       scored[id].pts+=r.pts;r.bd.forEach(b=>scored[id].bd.push(b));
     });
   });
   // Render cards from scored players (sorted by points)
   const scoredIds=Object.keys(scored).map(Number).sort((a,b)=>scored[b].pts-scored[a].pts);
-  scoredIds.forEach(id=>{const p=gp(id);if(!p)return;const s=scored[id];total+=s.pts;const chips=s.bd.map(b=>'<span class="chip '+(b.includes('-')?'neg':'pos')+'">'+b+'</span>').join('');cards+='<div class="ptcard '+(s.cap?'cap':'')+'"><div class="ptav">'+avHtml(p,34)+'</div><div class="pti"><div class="ptn">'+p.f+' '+p.n+(s.cap?' ©':'')+'</div><div class="ptm">'+p.c+' · '+p.p+' · '+p.cl+'</div><div class="ptbr">'+chips+'</div></div><div class="ptt '+(s.cap?'c':'')+'">'+s.pts+'</div></div>';});
+  scoredIds.forEach(id=>{const p=gp(id);if(!p)return;const s=scored[id];total+=s.pts;const chips=s.bd.map(b=>'<span class="chip '+(b.includes('-')?'neg':'pos')+'">'+b+'</span>').join('');cards+='<div class="ptcard '+(s.cap?'cap':'')+'"><div class="ptav">'+avHtml(p,34)+'</div><div class="pti"><div class="ptn">'+p.f+' '+p.n+(s.cap?' ©':'')+(s.bench?' <span style="font-size:9px;color:var(--muted)">(bench)</span>':'')+'</div><div class="ptm">'+p.c+' · '+p.p+' · '+p.cl+'</div><div class="ptbr">'+chips+'</div></div><div class="ptt '+(s.cap?'c':'')+'">'+s.pts+'</div></div>';});
   mdPts=total;
   recordWeeklyPoints(total);
   document.getElementById('s-md').textContent=total;
@@ -1422,6 +1422,13 @@ function lockAdmin(){sessionStorage.removeItem('kane_admin');document.getElement
 function admAllMatches(){
   const out=[];
   GS_FIXTURES.forEach((f,i)=>out.push({key:'gs'+i,label:'['+f.g+'] '+f.h+' vs '+f.a+' ('+f.d+')',home:f.h,away:f.a}));
+  // Knockout matches — only those with real teams set (skip placeholder slots)
+  KO_FIXTURES.forEach((f,i)=>{
+    const placeholder=/Winner|Runner|SF |TBD|\/|Losers|3rd/i;
+    if(f.a && !placeholder.test(f.h) && !placeholder.test(f.a)){
+      out.push({key:'ko'+i,label:'['+f.r+'] '+f.h+' vs '+f.a+' ('+f.d+')',home:f.h,away:f.a});
+    }
+  });
   return out;
 }
 function admBuildMatchList(){
@@ -1450,12 +1457,27 @@ function linesOf(id){return (document.getElementById(id).value||'').split('\n').
 async function admSaveResult(){
   const sel=document.getElementById('adm-match');
   const m=admAllMatches().find(x=>x.key===sel.value);if(!m)return;
-  const result={home:m.home,away:m.away,hs:parseInt(document.getElementById('adm-hs').value)||0,as:parseInt(document.getElementById('adm-as').value)||0,goals:linesOf('adm-goals'),assists:linesOf('adm-assists'),yellows:linesOf('adm-yellows'),reds:linesOf('adm-reds'),potm:linesOf('adm-potm'),date:getTodayUTC(),round:'Group Stage'};
+  // Determine the match's real date + round (so scoring maps to the right day's snapshot)
+  let mdate=getTodayUTC(),round='Group Stage';
+  if(sel.value.startsWith('ko')){
+    const kf=KO_FIXTURES[parseInt(sel.value.slice(2))];
+    if(kf){round=kf.r; const iso=admDispToIso(kf.d); if(iso)mdate=iso;}
+  }else if(sel.value.startsWith('gs')){
+    const gf=GS_FIXTURES[parseInt(sel.value.slice(2))];
+    if(gf){const iso=admDispToIso(gf.d); if(iso)mdate=iso;}
+  }
+  const result={home:m.home,away:m.away,hs:parseInt(document.getElementById('adm-hs').value)||0,as:parseInt(document.getElementById('adm-as').value)||0,goals:linesOf('adm-goals'),assists:linesOf('adm-assists'),yellows:linesOf('adm-yellows'),reds:linesOf('adm-reds'),potm:linesOf('adm-potm'),date:mdate,round:round};
   adminResults[sel.value]=result;
   await admPersist();
   admRenderSaved();
   rebuildLiveFromAdmin();
   showToast('✅ Result saved & synced');
+}
+// Convert a fixture display date like 'Jul 10' to ISO '2026-07-10'
+function admDispToIso(d){
+  const mm={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+  const p=(d||'').split(' ');if(p.length<2)return null;const mo=mm[p[0]];if(!mo)return null;
+  return '2026-'+mo+'-'+String(parseInt(p[1])||0).padStart(2,'0');
 }
 function admClearResult(){
   const sel=document.getElementById('adm-match');
