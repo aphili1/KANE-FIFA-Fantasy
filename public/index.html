@@ -707,7 +707,20 @@ async function loadSnapshotsFromCloud(){
     if(snap.exists()){
       const cloud=JSON.parse(snap.data().data||'{}');
       let changed=false;
-      Object.keys(cloud).forEach(date=>{if(!squadSnapshots[date]){squadSnapshots[date]=cloud[date];changed=true;}});
+      Object.keys(cloud).forEach(date=>{
+        const c=cloud[date];
+        // An admin-authored correction ALWAYS wins, even if this device
+        // already has some (possibly wrong/incomplete) local entry for that
+        // date — that's the whole point of the admin fix tool.
+        if(c&&c.fixedByAdmin){
+          const same=JSON.stringify(squadSnapshots[date])===JSON.stringify(c);
+          if(!same){squadSnapshots[date]=c;changed=true;}
+        }else if(!squadSnapshots[date]){
+          // Normal case: cloud only fills a genuinely missing date, so a
+          // freshly-created local snapshot for "today" is never clobbered.
+          squadSnapshots[date]=c;changed=true;
+        }
+      });
       if(changed){
         try{localStorage.setItem('kane_snaps_'+acctStorageKey(userKey),JSON.stringify(squadSnapshots));}catch(e){}
         try{calcPoints();}catch(e){}
