@@ -561,6 +561,37 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div id="adm-ko-list" style="margin-top:10px"></div>
     </div>
 
+    <!-- FIX MISSING SNAPSHOT -->
+    <div style="margin-top:1.4rem;padding-top:1rem;border-top:1px solid var(--border)">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--gold)">🩹 Fix a Member's Missing Squad Snapshot</div>
+      <div style="font-size:11px;color:var(--muted);margin:4px 0 10px;line-height:1.5">If a member's squad wasn't frozen for a match day (e.g. their app wasn't open at lock time), use this to set it manually using their <b>currently saved team</b>. Only use this if you've confirmed they haven't changed their squad since that date.</div>
+      <div class="fi"><label class="fl">Member Email</label>
+        <input class="finput" id="adm-fix-email" type="email" placeholder="member@email.com">
+      </div>
+      <div class="fi"><label class="fl">Match Date (YYYY-MM-DD)</label>
+        <input class="finput" id="adm-fix-date" type="text" placeholder="2026-07-15">
+      </div>
+      <button class="btn-p" onclick="admFixSnapshot()">🩹 Set Snapshot From Their Current Team</button>
+      <div id="adm-fix-result" style="margin-top:8px;font-size:12px"></div>
+
+      <div style="margin-top:1rem;padding-top:.85rem;border-top:1px dashed var(--border)">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5">If their <b>current</b> team is different from what they actually had on that date, enter their exact squad manually instead (e.g. from a screenshot they sent you). One player name per line, matching how names appear in the Market tab (e.g. "L. Messi").</div>
+        <div class="fi"><label class="fl">Squad Players (one per line, 15 total)</label>
+          <textarea class="finput" id="adm-fix-squad" rows="6" placeholder="D. Raya&#10;E. Garcia&#10;M. Merino&#10;..." style="font-family:inherit;resize:vertical"></textarea>
+        </div>
+        <div class="fi"><label class="fl">Captain (one name, must be in the list above)</label>
+          <input class="finput" id="adm-fix-captain" type="text" placeholder="L. Messi">
+        </div>
+        <div class="fi"><label class="fl">Formation</label>
+          <select class="finput" id="adm-fix-formation">
+            <option value="442">4-4-2</option><option value="433">4-3-3</option><option value="352">3-5-2</option><option value="4231">4-2-3-1</option>
+          </select>
+        </div>
+        <button class="btn-p" onclick="admFixSnapshotCustom()">🩹 Set This Exact Squad</button>
+        <div id="adm-fix-custom-result" style="margin-top:8px;font-size:12px"></div>
+      </div>
+    </div>
+
     <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border)">
       <button class="btn-s" onclick="admRecalcAll()">🔄 Recalculate All Member Scores</button>
       <button class="btn-s" style="margin-top:6px" onclick="lockAdmin()">🔒 Lock Admin Panel</button>
@@ -633,6 +664,7 @@ let squadSnapshots={}; // { 'YYYY-MM-DD': {squad:[...], captain, formation} }
 
 function snapshotKeyForToday(){return getTodayUTC();}
 // Capture the squad for the active lock window's date once locking begins
+let _snapshotDirty=false;
 function maybeSnapshotToday(){
   const active=getActiveLockWindow();
   if(!active)return;
@@ -640,14 +672,48 @@ function maybeSnapshotToday(){
   if(!squadSnapshots[t]){
     squadSnapshots[t]={squad:[...squad],captain:captainId,formation:formation,frozen:Date.now()};
     persistSnapshots();
+  }else if(_snapshotDirty){
+    // A previous cloud save failed silently — retry it on this tick.
+    persistSnapshots();
   }
 }
-function persistSnapshots(){
+async function persistSnapshots(){
   try{localStorage.setItem('kane_snaps_'+acctStorageKey(userKey),JSON.stringify(squadSnapshots));}catch(e){}
-  if(fbReady()&&!isDemo()){try{const {doc,setDoc}=window._fbFns;setDoc(doc(window._fbDB,'snapshots',acctStorageKey(userKey)),{data:JSON.stringify(squadSnapshots),updated:Date.now()});}catch(e){}}
+  if(fbReady()&&!isDemo()){
+    try{
+      const {doc,setDoc}=window._fbFns;
+      await setDoc(doc(window._fbDB,'snapshots',acctStorageKey(userKey)),{data:JSON.stringify(squadSnapshots),updated:Date.now()});
+      _snapshotDirty=false;
+    }catch(e){
+      console.warn('Snapshot cloud save failed — will retry',e);
+      _snapshotDirty=true; // retried automatically on the next clock tick
+    }
+  }
 }
 function loadSnapshots(){
   try{const s=localStorage.getItem('kane_snaps_'+acctStorageKey(userKey));if(s)squadSnapshots=JSON.parse(s);}catch(e){}
+  // Also pull from the cloud and merge — covers cases where a device's local
+  // save was lost/cleared, or a prior cloud write silently failed and only
+  // exists on another device. Cloud data fills gaps; never overwrites a
+  // locally-present date (local is assumed freshest for "today").
+  loadSnapshotsFromCloud();
+}
+async function loadSnapshotsFromCloud(){
+  if(!fbReady()||isDemo())return;
+  try{
+    const {doc,getDoc}=window._fbFns;
+    if(!getDoc)return;
+    const snap=await getDoc(doc(window._fbDB,'snapshots',acctStorageKey(userKey)));
+    if(snap.exists()){
+      const cloud=JSON.parse(snap.data().data||'{}');
+      let changed=false;
+      Object.keys(cloud).forEach(date=>{if(!squadSnapshots[date]){squadSnapshots[date]=cloud[date];changed=true;}});
+      if(changed){
+        try{localStorage.setItem('kane_snaps_'+acctStorageKey(userKey),JSON.stringify(squadSnapshots));}catch(e){}
+        try{calcPoints();}catch(e){}
+      }
+    }
+  }catch(e){}
 }
 // The squad to SCORE for a given match date: the frozen snapshot if it exists,
 // otherwise the current live squad (e.g. day still open).
@@ -1582,6 +1648,84 @@ function rebuildLiveFromAdmin(){
   try{renderFixtures();}catch(e){}
 }
 function admRecalcAll(){rebuildLiveFromAdmin();calcPoints();showToast('🔄 Scores recalculated');}
+
+// Set a member's snapshot to an EXACT manually-specified squad (used when
+// their current saved team no longer matches what they had on that date).
+async function admFixSnapshotCustom(){
+  const email=document.getElementById('adm-fix-email').value.trim();
+  const date=document.getElementById('adm-fix-date').value.trim();
+  const box=document.getElementById('adm-fix-custom-result');
+  if(!email||!/^\d{4}-\d{2}-\d{2}$/.test(date)){box.innerHTML='<span style="color:var(--red)">Enter a valid email and date above first.</span>';return;}
+  if(!fbReady()){box.innerHTML='<span style="color:var(--red)">Firebase not connected — try again in a moment.</span>';return;}
+  const lines=(document.getElementById('adm-fix-squad').value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  if(!lines.length){box.innerHTML='<span style="color:var(--red)">Enter at least one player name.</span>';return;}
+  const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');
+  const resolved=[],unresolved=[],ambiguous=[];
+  lines.forEach(line=>{
+    const target=norm(line);
+    let hits=PLAYERS_FULL.filter(p=>norm(p.n)===target);
+    if(hits.length===1){resolved.push(hits[0]);return;}
+    if(hits.length>1){ambiguous.push(line+' (matches '+hits.map(h=>h.n+' '+h.c).join(', ')+' — type more of their name)');return;}
+    // last-name fallback, only if unique across the WHOLE database
+    const lastWord=norm(line.split(/\s+/).pop());
+    if(lastWord.length>2){
+      hits=PLAYERS_FULL.filter(p=>norm(p.n.split(/\s+/).pop())===lastWord);
+      if(hits.length===1){resolved.push(hits[0]);return;}
+      if(hits.length>1){ambiguous.push(line+' (matches '+hits.map(h=>h.n+' '+h.c).join(', ')+' — type more of their name)');return;}
+    }
+    unresolved.push(line);
+  });
+  if(unresolved.length||ambiguous.length){
+    let msg='<span style="color:var(--red)">Could not set squad — fix these entries:</span>';
+    if(unresolved.length)msg+='<div style="margin-top:4px">Not found: '+unresolved.join(', ')+'</div>';
+    if(ambiguous.length)msg+='<div style="margin-top:4px">Ambiguous: '+ambiguous.join('; ')+'</div>';
+    box.innerHTML=msg;return;
+  }
+  const capName=(document.getElementById('adm-fix-captain').value||'').trim();
+  let capId=null;
+  if(capName){
+    const cap=resolved.find(p=>norm(p.n)===norm(capName));
+    if(!cap){box.innerHTML='<span style="color:var(--red)">Captain name must match one of the squad players listed above exactly.</span>';return;}
+    capId=cap.id;
+  }
+  const formation=document.getElementById('adm-fix-formation').value;
+  const squadIds=resolved.map(p=>p.id);
+  box.innerHTML='Saving…';
+  try{
+    const key=acctStorageKey(email);
+    const {doc,getDoc,setDoc}=window._fbFns;
+    let snaps={};
+    try{const snapDoc=await getDoc(doc(window._fbDB,'snapshots',key));if(snapDoc.exists())snaps=JSON.parse(snapDoc.data().data||'{}');}catch(e){}
+    snaps[date]={squad:squadIds,captain:capId,formation:formation,frozen:Date.now(),fixedByAdmin:true,manual:true};
+    await setDoc(doc(window._fbDB,'snapshots',key),{data:JSON.stringify(snaps),updated:Date.now()});
+    box.innerHTML='<span style="color:#6aaa7a">✅ Manual squad set for '+email+' on '+date+' — '+squadIds.length+' players resolved: '+resolved.map(p=>p.n).join(', ')+'</span>';
+  }catch(e){box.innerHTML='<span style="color:var(--red)">Failed: '+e.message+'</span>';}
+}
+
+// Manually set a member's missing squad snapshot using their currently-saved team.
+// Use when a member's app wasn't open during a day's lock window, so no
+// snapshot was ever captured for that date.
+async function admFixSnapshot(){
+  const email=document.getElementById('adm-fix-email').value.trim();
+  const date=document.getElementById('adm-fix-date').value.trim();
+  const box=document.getElementById('adm-fix-result');
+  if(!email||!/^\d{4}-\d{2}-\d{2}$/.test(date)){box.innerHTML='<span style="color:var(--red)">Enter a valid email and date (YYYY-MM-DD).</span>';return;}
+  if(!fbReady()){box.innerHTML='<span style="color:var(--red)">Firebase not connected — try again in a moment.</span>';return;}
+  box.innerHTML='Looking up their saved team…';
+  try{
+    const key=acctStorageKey(email);
+    const {doc,getDoc,setDoc}=window._fbFns;
+    const teamSnap=await getDoc(doc(window._fbDB,'teams',key));
+    if(!teamSnap.exists()){box.innerHTML='<span style="color:var(--red)">No saved team found for that email.</span>';return;}
+    const team=teamSnap.data();
+    if(!team.squad||!team.squad.length){box.innerHTML='<span style="color:var(--red)">That member has no squad saved.</span>';return;}
+    let snaps={};
+    try{const snapDoc=await getDoc(doc(window._fbDB,'snapshots',key));if(snapDoc.exists())snaps=JSON.parse(snapDoc.data().data||'{}');}catch(e){}
+    snaps[date]={squad:team.squad,captain:team.captain,formation:team.formation||'442',frozen:Date.now(),fixedByAdmin:true};
+    await setDoc(doc(window._fbDB,'snapshots',key),{data:JSON.stringify(snaps),updated:Date.now()});
+    box.innerHTML='<span style="color:#6aaa7a">✅ Snapshot set for '+email+' on '+date+' — '+team.squad.length+' players. They\'ll be scored against this squad next time they refresh.</span>';
+  }catch(e){box.innerHTML='<span style="color:var(--red)">Failed: '+e.message+'</span>';}
+}
 
 // Pull final scores from the live feed for the Fixtures display.
 // Admin-entered results ALWAYS take priority (override anytime).

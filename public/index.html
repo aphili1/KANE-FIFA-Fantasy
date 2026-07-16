@@ -575,7 +575,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div id="adm-fix-result" style="margin-top:8px;font-size:12px"></div>
 
       <div style="margin-top:1rem;padding-top:.85rem;border-top:1px dashed var(--border)">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5">If their <b>current</b> team is different from what they actually had on that date, enter their exact squad manually instead (e.g. from a screenshot they sent you). One player name per line, matching how names appear in the Market tab (e.g. "L. Messi").</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5">If their <b>current</b> team is different from what they actually had on that date, enter their exact squad manually instead (e.g. from a screenshot they sent you). One player name per line, matching how names appear in the Market tab (e.g. "L. Messi"). If two players share the same name across nations, add the nation in parentheses to disambiguate, e.g. "E. Martinez (Argentina)".</div>
         <div class="fi"><label class="fl">Squad Players (one per line, 15 total)</label>
           <textarea class="finput" id="adm-fix-squad" rows="6" placeholder="D. Raya&#10;E. Garcia&#10;M. Merino&#10;..." style="font-family:inherit;resize:vertical"></textarea>
         </div>
@@ -1662,16 +1662,22 @@ async function admFixSnapshotCustom(){
   const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');
   const resolved=[],unresolved=[],ambiguous=[];
   lines.forEach(line=>{
-    const target=norm(line);
-    let hits=PLAYERS_FULL.filter(p=>norm(p.n)===target);
+    // Optional nation hint in parentheses to disambiguate same-name players
+    // across different countries, e.g. "E. Martinez (Argentina)".
+    let searchName=line,nationHint=null;
+    const paren=line.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+    if(paren){searchName=paren[1].trim();nationHint=paren[2].trim();}
+    const pool=nationHint?PLAYERS_FULL.filter(p=>norm(p.c)===norm(nationHint)):PLAYERS_FULL;
+    const target=norm(searchName);
+    let hits=pool.filter(p=>norm(p.n)===target);
     if(hits.length===1){resolved.push(hits[0]);return;}
-    if(hits.length>1){ambiguous.push(line+' (matches '+hits.map(h=>h.n+' '+h.c).join(', ')+' — type more of their name)');return;}
-    // last-name fallback, only if unique across the WHOLE database
-    const lastWord=norm(line.split(/\s+/).pop());
+    if(hits.length>1){ambiguous.push(line+' (matches '+hits.map(h=>h.n+' '+h.c).join(', ')+' — add the nation in parentheses, e.g. "'+searchName+' ('+hits[0].c+')")');return;}
+    // last-name fallback, only if unique within the search pool
+    const lastWord=norm(searchName.split(/\s+/).pop());
     if(lastWord.length>2){
-      hits=PLAYERS_FULL.filter(p=>norm(p.n.split(/\s+/).pop())===lastWord);
+      hits=pool.filter(p=>norm(p.n.split(/\s+/).pop())===lastWord);
       if(hits.length===1){resolved.push(hits[0]);return;}
-      if(hits.length>1){ambiguous.push(line+' (matches '+hits.map(h=>h.n+' '+h.c).join(', ')+' — type more of their name)');return;}
+      if(hits.length>1){ambiguous.push(line+' (matches '+hits.map(h=>h.n+' '+h.c).join(', ')+' — add the nation in parentheses, e.g. "'+searchName+' ('+hits[0].c+')")');return;}
     }
     unresolved.push(line);
   });
