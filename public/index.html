@@ -594,6 +594,18 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
     <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border)">
       <button class="btn-s" onclick="admRecalcAll()">🔄 Recalculate All Member Scores</button>
+      <div style="font-size:9px;color:var(--muted);margin-top:4px">Refreshes only your own current view.</div>
+    </div>
+
+    <!-- BULK RECALCULATE -->
+    <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border)">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--gold)">🌍 Recalculate EVERY Member's Total</div>
+      <div style="font-size:11px;color:var(--muted);margin:4px 0 10px;line-height:1.5">Use this after a scoring-rule fix (like a points-formula change) so every registered member's total updates immediately in Firebase — without needing each person to open the app and refresh. This can take a minute for a large group.</div>
+      <button class="btn-p" onclick="admRecalcEveryone()">🌍 Recalculate Everyone Now</button>
+      <div id="adm-bulk-result" style="margin-top:8px;font-size:12px"></div>
+    </div>
+
+    <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border)">
       <button class="btn-s" style="margin-top:6px" onclick="lockAdmin()">🔒 Lock Admin Panel</button>
     </div>
   </div>
@@ -1444,7 +1456,9 @@ function calcPlayerPts(p,matches,isCap){
     if(res.reds.some(r=>r.id===p.id)){pts+=SC.red;bd.push('🟥 '+SC.red);}
     if(res.potm.some(x=>x.id===p.id)){pts+=SC.potm;bd.push('⭐ POTM +'+SC.potm);}
   });
-  const raw=Math.max(0,pts);
+  // Allow the true total, including negative (e.g. a card with no win/goal
+  // to offset it) — don't floor at zero, or card penalties silently vanish.
+  const raw=pts;
   if(isCap){bd.push('© ×2='+raw*2);return{pts:raw*2,bd};}
   return{pts:raw,bd};
 }
@@ -1661,6 +1675,58 @@ function rebuildLiveFromAdmin(){
   try{renderFixtures();}catch(e){}
 }
 function admRecalcAll(){rebuildLiveFromAdmin();calcPoints();showToast('🔄 Scores recalculated');}
+
+// Pure scoring function for the bulk-recalculate tool: computes a member's
+// all-time total from EXPLICIT data (their squad/snapshots), not the current
+// browser session's globals — so it can be run for any member, not just the
+// person currently logged in.
+function computeMemberTotal(memberSquad,memberCaptain,memberFormation,memberSnapshots,matches){
+  const scored={};
+  (matches||[]).forEach(mt=>{
+    const dateKey=mt.date||'';
+    let snap=memberSnapshots&&memberSnapshots[dateKey];
+    if(!snap||!snap.squad||!snap.squad.length){
+      snap={squad:memberSquad||[],captain:memberCaptain,formation:memberFormation||'442'};
+    }
+    (snap.squad||[]).forEach(id=>{
+      const p=gp(id);if(!p)return;
+      if(p.c!==mt.home&&p.c!==mt.away)return;
+      const cap=id===(snap.captain||memberCaptain);
+      const r=calcPlayerPts(p,[mt],cap);
+      scored[id]=(scored[id]||0)+r.pts;
+    });
+  });
+  return Object.values(scored).reduce((s,v)=>s+v,0);
+}
+
+// Recalculate and push corrected totals for EVERY registered member directly
+// in Firebase — so a scoring-logic fix (like the negative-points bug) applies
+// to everyone immediately, without waiting for each person to open the app.
+async function admRecalcEveryone(){
+  const box=document.getElementById('adm-bulk-result');
+  if(!fbReady()){box.innerHTML='<span style="color:var(--red)">Firebase not connected.</span>';return;}
+  box.innerHTML='Starting… this may take a minute for a large group.';
+  try{
+    rebuildLiveFromAdmin();
+    const matches=liveMatches||[];
+    const {collection,getDocs,doc,getDoc,setDoc}=window._fbFns;
+    const teamsSnap=await getDocs(collection(window._fbDB,'teams'));
+    const members=[];teamsSnap.forEach(d=>members.push({id:d.id,data:d.data()}));
+    let done=0,failed=0;
+    for(const m of members){
+      try{
+        let snaps={};
+        try{const sd=await getDoc(doc(window._fbDB,'snapshots',m.id));if(sd.exists())snaps=JSON.parse(sd.data().data||'{}');}catch(e){}
+        const newTotal=computeMemberTotal(m.data.squad,m.data.captain,m.data.formation,snaps,matches);
+        await setDoc(doc(window._fbDB,'teams',m.id),{allTimePts:newTotal},{merge:true});
+        await setDoc(doc(window._fbDB,'leaderboard',m.id),{all:newTotal},{merge:true});
+        done++;
+      }catch(e){failed++;}
+      box.innerHTML='Recalculating… '+done+'/'+members.length+(failed?' ('+failed+' failed)':'');
+    }
+    box.innerHTML='<span style="color:#6aaa7a">✅ Done — updated '+done+' of '+members.length+' members'+(failed?', '+failed+' failed':'')+'. Standings now reflect the corrected scoring.</span>';
+  }catch(e){box.innerHTML='<span style="color:var(--red)">Failed: '+e.message+'</span>';}
+}
 
 // Set a member's snapshot to an EXACT manually-specified squad (used when
 // their current saved team no longer matches what they had on that date).
